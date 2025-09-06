@@ -27,9 +27,9 @@
     "swiper": "^11.2.6"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/node": "^20.19.13",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
     "typescript": "^5"
   }
 }
