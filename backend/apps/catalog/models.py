@@ -3,8 +3,8 @@ from django.db import models
 from django.db.models import Q, F
 from django.utils.text import slugify
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from apps.common.models import TimeStampedModel
+from django.core.validators import MinValueValidator, MaxValueValidator
+from apps.common.models import TimeStampedModel, CURRENCY_VALIDATOR
 
 
 class Category(TimeStampedModel):
@@ -66,10 +66,6 @@ class Category(TimeStampedModel):
 
 
 class Product(TimeStampedModel):
-    CURRENCY_VALIDATOR = RegexValidator(
-        regex=r"^[A-Z]{3}$",
-        message="Currency must be a 3-letter ISO code (e.g., JPY, USD).",
-    )
     currency_symbols = {
         "JPY": "¥",
         "USD": "$",
