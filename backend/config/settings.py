@@ -21,7 +21,6 @@ INSTALLED_APPS = [
     # Intenrnal
     "apps.common",
     "apps.catalog",
-    "apps.cart",
     "apps.checkout",
     "apps.orders",
     "apps.payments",
