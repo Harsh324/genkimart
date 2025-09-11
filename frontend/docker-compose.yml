@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=mock
+      - NEXT_PUBLIC_API_BASE_URL=mock   # we'll use this soon for mock services
     volumes:
       - .:/app
       - /app/node_modules

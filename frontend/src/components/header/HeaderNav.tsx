@@ -52,28 +52,10 @@ function ComponentName() {
                 <div className="container">
                     <div className="row">
                         <div className="col-lg-12">
-                            <div className="nav-and-btn-wrapper">
-                                <div className="nav-area">
-                                    <Nav />
-                                </div>
-                                {/* button-area */}
-                                <div className="right-btn-area">
-                                    <a href="#" className="btn-narrow">
-                                        Trending Products
-                                    </a>
-                                    <button className="rts-btn btn-primary">
-                                        Get 30% Discount Now
-                                        <span>Sale</span>
-                                    </button>
-                                </div>
-                                {/* button-area end */}
-                            </div>
-                        </div>
-                        <div className="col-lg-12">
                             <div className="logo-search-category-wrapper after-md-device-header">
-                                <a href="index" className="logo-area">
+                                <a href="/" className="logo-area">
                                     <img
-                                        src="/assets/images/logo/logo-01.svg"
+                                        src="/assets/images/logo/genkimart-clean.svg"
                                         alt="logo-main"
                                         className="logo"
                                     />
@@ -172,7 +154,7 @@ function ComponentName() {
                                 </div>
                                 <div className="main-wrapper-action-2 d-flex">
                                     <div className="accont-wishlist-cart-area-header">
-                                        <a href="/account" className="btn-border-only account">
+                                        <a href="/profile" className="btn-border-only account">
                                             <i className="fa-light fa-user" />
                                             Account
                                         </a>
