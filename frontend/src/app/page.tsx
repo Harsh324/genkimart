@@ -24,11 +24,10 @@ export default function Home() {
           <BannerOne />
           <FeatureOne />
           <FeatureProduct />
-          <DiscountProduct />
+          {/* <DiscountProduct /> */}
           <WeeklyBestSelling />
-          <FeatureDiscount />
+          {/* <FeatureDiscount /> */}
           <TrandingProduct />
-          <BlogOne />
           <FooterOne />
         </div>
       </CartProvider>
