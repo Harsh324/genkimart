@@ -14,6 +14,11 @@ class Status(models.TextChoices):
 
 
 class Cart(TimeStampedModel):
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        CONVERTED = "converted", "Converted to Order"
+        ABANDONED = "abandoned", "Abandoned"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         getattr(settings, "AUTH_USER_MODEL", "auth.User"),
