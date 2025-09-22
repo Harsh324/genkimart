@@ -506,7 +506,7 @@ const CompareElements: React.FC = () => {
       <RelatedProduct />
       <ShortService />
       <FooterOne />
-      <ToastContainer />
+      {/* <ToastContainer /> */}
     </div>
   );
 };

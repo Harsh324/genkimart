@@ -60,7 +60,7 @@ const BannerMain: React.FC<Props> = ({ banners = [], categories = [], loading = 
                                     slidesPerView={1}
                                     loop
                                     speed={2000}
-                                    autoplay={{ delay: 4000 }}
+                                    autoplay={{ delay: 4000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                                     navigation={{ nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" }}
                                     breakpoints={{
                                         0: { slidesPerView: 1, spaceBetween: 0 },

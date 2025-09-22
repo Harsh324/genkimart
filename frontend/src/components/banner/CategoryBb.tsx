@@ -10,23 +10,12 @@ import type { CategoryItem } from "@/types/content";
 import "swiper/css";
 import "swiper/css/navigation";
 
+import Fallback from "@/data/Categories.json"
+
 type Props = {
     categories?: CategoryItem[];
     loading?: boolean;
 };
-
-const fallback: CategoryItem[] = [
-    { id: 1, name: "Organic Vegetable", imageUrl: "/assets/images/category/01.png", href: "/shop" },
-    { id: 2, name: "Organic Vegetable", imageUrl: "/assets/images/category/02.png", href: "/shop" },
-    { id: 3, name: "Organic Vegetable", imageUrl: "/assets/images/category/03.png", href: "/shop" },
-    { id: 4, name: "Organic Vegetable", imageUrl: "/assets/images/category/04.png", href: "/shop" },
-    { id: 5, name: "Organic Vegetable", imageUrl: "/assets/images/category/05.png", href: "/shop" },
-    { id: 6, name: "Organic Vegetable", imageUrl: "/assets/images/category/06.png", href: "/shop" },
-    { id: 7, name: "Organic Vegetable", imageUrl: "/assets/images/category/07.png", href: "/shop" },
-    { id: 8, name: "Organic Vegetable", imageUrl: "/assets/images/category/08.png", href: "/shop" },
-    { id: 9, name: "Organic Vegetable", imageUrl: "/assets/images/category/09.png", href: "/shop" },
-    { id: 10, name: "Organic Vegetable", imageUrl: "/assets/images/category/10.png", href: "/shop" },
-];
 
 function CategoryBannerBottom({ categories = [], loading = false }: Props) {
     if (loading) {
@@ -43,7 +32,9 @@ function CategoryBannerBottom({ categories = [], loading = false }: Props) {
             </div>
         );
     }
-    const items = categories.length ? categories : fallback;
+    const items = categories.length 
+        ? categories 
+        : (Fallback as CategoryItem[]).filter(Boolean);
 
     return (
         <div className="rts-caregory-area-one">
@@ -57,7 +48,7 @@ function CategoryBannerBottom({ categories = [], loading = false }: Props) {
                                 slidesPerView={10}
                                 loop
                                 speed={1000}
-                                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                                autoplay={{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }}
                                 breakpoints={{
                                 0: { slidesPerView: 2, spaceBetween: 12 },
                                 320: { slidesPerView: 2, spaceBetween: 12 },
