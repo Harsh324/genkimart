@@ -1,116 +1,123 @@
+from dataclasses import dataclass
+from typing import Iterable
 from django.db import transaction
-from django.utils import timezone
-
-from apps.checkout.models import Cart
-from apps.orders.models import Order, OrderItem, OrderCoupon
+from django.db.models import Prefetch
+from apps.checkout.services import get_cart, clear_cart  # reuse your helpers
 from apps.catalog.models import Product
-from apps.checkout.exceptions import CheckoutError
-from apps.checkout.services import validate_coupon_for_cart  # <-- reuse validator
+from .models import Order, OrderItem, Address
 
 
-def convert_cart_to_order(
-    *,
-    cart: Cart,
-    email: str,
-    shipping_address: dict,
-    billing_address: dict | None = None,
-    shipping_amount: int = 0,
-    tax_amount: int = 0,
-) -> Order:
-    if cart.status != Cart.Status.ACTIVE:
-        raise CheckoutError("Cart is not active")
+class OrderError(Exception):
+    """Domain-level error for order placement."""
 
-    with transaction.atomic():
-        items = list(cart.items.select_related("product"))
-        if not items:
-            raise CheckoutError("Cart is empty")
 
-        # currency consistency (defensive)
-        for line in items:
-            if line.price_currency != cart.currency:
-                raise CheckoutError(
-                    "Cart contains mixed currencies; please start a new cart."
-                )
+@dataclass
+class LineSnapshot:
+    product: Product
+    quantity: int
 
-        # Sanitize inputs
-        shipping_amount = max(0, int(shipping_amount))
-        tax_amount = max(0, int(tax_amount))
 
-        subtotal = 0
-        order_items: list[OrderItem] = []
-        for line in items:
-            product: Product | None = line.product
-            if not product or not product.in_stock:
-                raise CheckoutError(f"Product {line.product_title} is not available")
+def _create_address_for_user(user, data: dict, addr_type: Address.Type) -> Address:
+    addr = Address(
+        user=user,
+        type=addr_type,
+        full_name=data["full_name"],
+        line1=data["line1"],
+        line2=data.get("line2", "") or "",
+        city=data["city"],
+        prefecture=data["prefecture"],
+        postal_code=data["postal_code"],
+        country_code=data.get("country_code", "JP"),
+        phone=data.get("phone", "") or "",
+    )
+    addr.full_clean()  # runs your normalization/validation
+    addr.save()
+    return addr
 
-            # Atomic stock decrement (0/1 rows updated inside model)
-            if not product.decrement_stock(line.quantity):
-                raise CheckoutError(f"Insufficient stock for {line.product_title}")
 
-            line_subtotal = int(line.unit_price_amount) * int(line.quantity)
-            subtotal += line_subtotal
-            order_items.append(
-                OrderItem(
-                    order=None,  # set after order created
-                    product=product,
-                    product_title=line.product_title,
-                    product_slug=line.product_slug,
-                    quantity=line.quantity,
-                    unit_price_amount=line.unit_price_amount,
-                    price_currency=line.price_currency,
-                )
-            )
-
-        # Coupon: authoritative re-validation
-        coupon_obj = None
-        discount_amount = 0
-        if cart.coupon_code:
-            try:
-                coupon_obj = validate_coupon_for_cart(cart, code=cart.coupon_code)
-            except CheckoutError:
-                coupon_obj = None
-
-        if coupon_obj:
-            if coupon_obj.percent_off is not None:
-                # subtotal int * Decimal -> Decimal, int() truncates (OK for JPY)
-                discount_amount = int(subtotal * (coupon_obj.percent_off / 100))
-            elif coupon_obj.amount_off is not None:
-                discount_amount = int(coupon_obj.amount_off)
-            discount_amount = max(0, min(discount_amount, subtotal))
-
-        total = max(0, subtotal - discount_amount) + shipping_amount + tax_amount
-
-        order = Order.objects.create(
-            user=cart.user,
-            email=email,
-            status=Order.Status.PENDING_PAYMENT,
-            # fulfillment_status defaults to UNFULFILLED
-            currency=cart.currency,
-            shipping_address=shipping_address,
-            billing_address=billing_address or shipping_address,
-            subtotal_amount=subtotal,
-            discount_amount=discount_amount,
-            shipping_amount=shipping_amount,
-            tax_amount=tax_amount,
-            total_amount=total,
-            coupon_code=coupon_obj.code if coupon_obj else "",  # <-- set it
-            placed_at=timezone.now(),
+def _cart_lines(cart) -> Iterable[LineSnapshot]:
+    # ensure products are already loaded
+    items = cart.items.prefetch_related(
+        Prefetch(
+            "product",
+            queryset=Product.objects.only(
+                "id", "title", "price", "is_active", "stock_quantity"
+            ),
         )
+    ).all()
+    for it in items:
+        yield LineSnapshot(product=it.product, quantity=it.quantity)
 
-        for oi in order_items:
-            oi.order = order
-        OrderItem.objects.bulk_create(order_items)
 
-        if coupon_obj and discount_amount > 0:
-            OrderCoupon.objects.create(
+@transaction.atomic
+def place_order_for_user(
+    user,
+    shipping_address_data: dict,
+    billing_address_data: dict | None,
+    billing_same_as_shipping: bool,
+) -> Order:
+    cart = get_cart(user)
+    lines = list(_cart_lines(cart))
+    if not lines:
+        raise OrderError("Cart is empty.")
+
+    # stock checks + decrement
+    for snap in lines:
+        p = snap.product
+        if not (getattr(p, "is_active", False) and getattr(p, "in_stock", False)):
+            raise OrderError(f"Product unavailable: {p.title}")
+        if p.decrement_stock(snap.quantity) == 0:
+            raise OrderError(f"Insufficient stock: {p.title}")
+
+    # addresses
+    ship_addr = _create_address_for_user(
+        user, shipping_address_data, Address.Type.SHIPPING
+    )
+    if billing_same_as_shipping:
+        bill_addr = _create_address_for_user(
+            user, shipping_address_data, Address.Type.BILLING
+        )
+    elif billing_address_data:
+        bill_addr = _create_address_for_user(
+            user, billing_address_data, Address.Type.BILLING
+        )
+    else:
+        bill_addr = None
+
+    order = Order.objects.create(
+        user=user,
+        subtotal_amount=cart.subtotal_amount,
+        shipping_address=ship_addr,
+        billing_address=bill_addr,
+    )
+
+    OrderItem.objects.bulk_create(
+        [
+            OrderItem(
                 order=order,
-                coupon=coupon_obj,
-                discounted_amount=discount_amount,
+                product=snap.product,
+                product_title=snap.product.title,
+                unit_price=snap.product.price,
+                quantity=snap.quantity,
             )
-            # (optional) increment coupon counters here, if you enforce limits
+            for snap in lines
+        ]
+    )
 
-        cart.status = Cart.Status.CONVERTED
-        cart.expires_at = None  # optional: stop showing as expirable
-        cart.save(update_fields=["status", "expires_at", "updated_at"])
+    clear_cart(cart)
+    return order
 
-        return order
+
+@transaction.atomic
+def cancel_order(order: Order) -> Order:
+    if order.status not in {Order.Status.PENDING, Order.Status.PAID}:
+        raise OrderError("Only pending/paid orders can be cancelled.")
+
+    # Put stock back
+    items = order.items.select_related("product")
+    for it in items:
+        it.product.increment_stock(it.quantity)
+
+    order.status = Order.Status.CANCELLED
+    order.save(update_fields=["status", "updated_at"])
+    return order

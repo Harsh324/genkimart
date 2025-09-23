@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "apps.common",
     "apps.catalog",
     "apps.checkout",
+    "apps.orders",
 ]
 
 # ===== Middleware (CSRF removed for dev) =====
