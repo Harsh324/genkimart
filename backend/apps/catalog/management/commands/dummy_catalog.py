@@ -5,7 +5,6 @@ from datetime import timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
-from django.utils.text import slugify
 from django.contrib.auth import get_user_model
 
 from apps.catalog.models import (
@@ -16,7 +15,6 @@ from apps.catalog.models import (
     ProductAttribute,
     Review,
 )
-
 
 ADJS = ["Classic", "Modern", "Premium", "Eco", "Urban", "Sport", "Casual", "Basic"]
 NOUNS = ["Sneaker", "Jacket", "Tee", "Jeans", "Boot", "Bag", "Watch", "Cap", "Sandal"]
@@ -51,21 +49,13 @@ class Command(BaseCommand):
             action="store_true",
             help="Delete existing catalog data before seeding.",
         )
-        parser.add_argument(
-            "--currency",
-            type=str,
-            default="JPY",
-            help="3-letter currency to use for prices (default: JPY).",
-        )
 
     @transaction.atomic
     def handle(self, *args, **opts):
         product_target = max(1, int(opts["products"]))
-        currency = opts["currency"].upper().strip()[:3]
 
         if opts["clear"]:
             self.stdout.write("Clearing existing data…")
-            # Order matters to avoid FK constraint noise
             Review.objects.all().delete()
             ProductImage.objects.all().delete()
             ProductAttribute.objects.all().delete()
@@ -73,7 +63,7 @@ class Command(BaseCommand):
             Attribute.objects.all().delete()
             Category.objects.all().delete()
 
-        # ---- Users (for some reviews) ----
+        # ---- Users (for reviews) ----
         User = get_user_model()
         demo_users = []
         for i in range(3):
@@ -83,37 +73,18 @@ class Command(BaseCommand):
                 defaults={
                     "username": email
                     if hasattr(User, "username")
-                    else email.split("@")[0],
+                    else email.split("@")[0]
                 },
             )
             demo_users.append(user)
 
-        # ---- Categories (root + children) ----
+        # ---- Categories (flat) ----
         self.stdout.write("Creating categories…")
-        roots_spec = {
-            "men": ["shoes", "tops", "bottoms", "accessories"],
-            "women": ["shoes", "tops", "bottoms", "accessories"],
-            "kids": ["shoes", "tops"],
-        }
-        roots = {}
-        leaves = []
-
-        for root_name, subs in roots_spec.items():
-            root, _ = Category.objects.get_or_create(
-                name=root_name.capitalize(),
-                parent=None,
-                defaults={"slug": slugify(root_name)},
-            )
-            root.save()  # ensure path is built
-            roots[root_name] = root
-            for sub in subs:
-                child, _ = Category.objects.get_or_create(
-                    name=sub.capitalize(),
-                    parent=root,
-                    defaults={"slug": slugify(sub)},
-                )
-                child.save()  # ensures correct path
-                leaves.append(child)
+        cat_names = ["Shoes", "Tops", "Bottoms", "Accessories", "Bags", "Watches"]
+        categories = []
+        for name in cat_names:
+            cat, _ = Category.objects.get_or_create(name=name)
+            categories.append(cat)
 
         # ---- Attributes ----
         self.stdout.write("Creating attributes…")
@@ -125,37 +96,21 @@ class Command(BaseCommand):
         self.stdout.write("Creating products…")
         created_products = 0
         for i in range(product_target):
-            category = random.choice(leaves)
-
+            category = random.choice(categories)
             title = f"{random.choice(ADJS)} {random.choice(NOUNS)}"
-            slug = slugify(f"{title}-{category.slug}-{i}-{random.randint(1000, 9999)}")
-
-            # Price in minor units. For JPY we treat as whole yen; for others use cents.
-            base = random.randint(1500, 35000)  # sensible JPY range
-            price_amount = base if currency == "JPY" else base * 100
-
-            # ~40% chance to be on sale with 10–40% discount
-            if random.random() < 0.4:
-                discount_pct = random.randint(10, 40)
-                sale_amount = int(price_amount * (100 - discount_pct) / 100)
-            else:
-                sale_amount = None
-
+            price = random.randint(1500, 35000)
             stock_qty = max(0, int(random.gauss(30, 20)))
 
             product = Product.objects.create(
                 title=title,
-                slug=slug,
                 description=rand_words(40),
                 category=category,
-                is_active=random.random() > 0.05,  # a few inactive
-                price_amount=price_amount,
-                price_currency=currency,
-                sale_price_amount=sale_amount,
+                is_active=random.random() > 0.05,
+                price=price,
                 stock_quantity=stock_qty,
             )
 
-            # Images: 3 per product, sort_rank unique, exactly one primary
+            # Images
             primary_rank = random.randint(0, 2)
             for rank in range(3):
                 ProductImage.objects.create(
@@ -166,7 +121,7 @@ class Command(BaseCommand):
                     is_primary=(rank == primary_rank),
                 )
 
-            # Attributes (unique per product)
+            # Attributes
             ProductAttribute.objects.create(
                 product=product,
                 attribute=attr_color,
@@ -186,16 +141,15 @@ class Command(BaseCommand):
                 sort_rank=30,
             )
 
-            # Reviews (0–5 per product); satisfy check constraint (author or author_name)
+            # Reviews
             for r in range(random.randint(0, 5)):
                 use_fk_author = random.random() < 0.6 and demo_users
                 author = random.choice(demo_users) if use_fk_author else None
                 author_name = (
                     ""
-                    if use_fk_author
-                    else f"{random.choice(['Alex','Sam','Jamie','Taylor','Kai','Mika'])} {random.choice(['S.', 'K.', 'R.', 'M.', 'A.'])}"
+                    if author
+                    else f"{random.choice(['Alex','Sam','Jamie','Taylor','Kai','Mika'])} {random.choice(['S.','K.','R.','M.','A.'])}"
                 )
-
                 created_at = timezone.now() - timedelta(days=random.randint(0, 365))
                 Review.objects.create(
                     product=product,

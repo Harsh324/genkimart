@@ -1,80 +1,22 @@
 import uuid
 from django.db import models
 from django.db.models import Q, F
-from django.utils.text import slugify
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from apps.common.models import TimeStampedModel, CURRENCY_VALIDATOR
+from apps.common.models import TimeStampedModel
 
 
 class Category(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=160)
-    slug = models.SlugField(max_length=180, db_index=True)
-    parent = models.ForeignKey(
-        "self",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="children",
-    )
-    path = models.CharField(
-        max_length=255, help_text='e.g., "/men/shoes"', db_index=True, blank=True
-    )
-
-    class Meta:
-        ordering = ["path", "name"]
-        constraints = [
-            # Root categories: slug unique when parent IS NULL
-            models.UniqueConstraint(
-                fields=["slug"],
-                condition=Q(parent__isnull=True),
-                name="uq_category_root_slug",
-            ),
-            # Non-root: unique per parent
-            models.UniqueConstraint(
-                fields=["parent", "slug"],
-                condition=Q(parent__isnull=False),
-                name="uq_category_parent_slug",
-            ),
-            # Path is globally unique (fast lookups + no dup paths)
-            models.UniqueConstraint(
-                fields=["path"],
-                name="uq_category_path",
-            ),
-            # Disallow self-parent
-            models.CheckConstraint(
-                check=~Q(parent=F("id")),
-                name="ck_category_not_self_parent",
-            ),
-        ]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-
-        # build path from ancestors: /parent/child
-        parts, node = [], self
-        while node is not None:
-            parts.append(node.slug or "")
-            node = node.parent
-        self.path = "/" + "/".join(reversed([p for p in parts if p]))
-        super().save(*args, **kwargs)
+    name = models.CharField(max_length=160, unique=True)
 
     def __str__(self):
         return self.name
 
 
 class Product(TimeStampedModel):
-    currency_symbols = {
-        "JPY": "¥",
-        "USD": "$",
-        "EUR": "€",
-        "GBP": "£",
-    }
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, db_index=True)
-    slug = models.SlugField(max_length=255, unique=True, db_index=True)
     description = models.TextField(blank=True)
     category = models.ForeignKey(
         "catalog.Category",
@@ -87,17 +29,8 @@ class Product(TimeStampedModel):
         db_index=True,
         help_text="Whether this product is visible to customers",
     )
-    price_amount = models.IntegerField(
-        help_text="Minor units (e.g., cents) - base price",
-        validators=[MinValueValidator(0)],
-    )
-    price_currency = models.CharField(
-        max_length=3, default="JPY", validators=[CURRENCY_VALIDATOR]
-    )
-    sale_price_amount = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Sale price in minor units (e.g., cents)",
+    price = models.IntegerField(
+        help_text="base price of product",
         validators=[MinValueValidator(0)],
     )
     stock_quantity = models.PositiveIntegerField(
@@ -112,73 +45,14 @@ class Product(TimeStampedModel):
             models.Index(
                 fields=["category", "is_active"], name="ix_product_cat_active"
             ),
-            models.Index(
-                fields=["is_active", "price_amount"], name="ix_product_active_price"
-            ),
+            models.Index(fields=["is_active", "price"], name="ix_product_active_price"),
         ]
         constraints = [
             models.CheckConstraint(
-                check=Q(price_amount__gte=0),
+                check=Q(price__gte=0),
                 name="ck_product_price_nonneg",
             ),
-            models.CheckConstraint(
-                check=Q(sale_price_amount__isnull=True) | Q(sale_price_amount__gte=0),
-                name="ck_product_sale_nonneg",
-            ),
-            models.CheckConstraint(
-                check=Q(sale_price_amount__isnull=True)
-                | Q(sale_price_amount__lt=F("price_amount")),
-                name="ck_product_sale_lt_price",
-            ),
-            # Postgres supports regex in CheckConstraint
-            models.CheckConstraint(
-                check=Q(price_currency__regex=r"^[A-Z]{3}$"),
-                name="ck_product_currency_3letter",
-            ),
         ]
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
-    # Pricing Methods
-    @property
-    def is_on_sale(self):
-        """Check if product is currently on sale"""
-        return self.sale_price_amount is not None
-
-    @property
-    def current_price(self):
-        """Get the current applicable price amount"""
-        return self.sale_price_amount if self.is_on_sale else self.price_amount
-
-    @property
-    def discount_percentage(self):
-        """Get discount percentage if on sale"""
-        if not self.is_on_sale or self.price_amount <= 0:
-            return 0
-        discount = (
-            (self.price_amount - self.sale_price_amount) / self.price_amount
-        ) * 100
-        return round(discount, 2)
-
-    @property
-    def current_price_display(self):
-        """Get formatted price for display"""
-        amount = self.current_price
-        symbol = self.currency_symbols.get(self.price_currency, self.price_currency)
-        if self.price_currency == "JPY":
-            return f"{symbol}{amount:,}"
-        return f"{symbol}{amount/100:,.2f}"
-
-    @property
-    def original_price_dispaly(self):
-        """Get formatted original price (useful for showing strikethrough)"""
-        symbol = self.currency_symbols.get(self.price_currency, self.price_currency)
-        if self.price_currency == "JPY":
-            return f"{symbol}{self.price_amount:,}"
-        return f"{symbol}{self.price_amount/100:,.2f}"
 
     # Stock methods
     @property
@@ -202,9 +76,6 @@ class Product(TimeStampedModel):
             stock_quantity=F("stock_quantity") + qty
         )
         self.refresh_from_db(fields=["stock_quantity"])
-
-
-# ========== PRODUCT IMAGES (normalized) ==========
 
 
 class ProductImage(TimeStampedModel):

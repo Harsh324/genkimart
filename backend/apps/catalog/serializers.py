@@ -14,8 +14,8 @@ from apps.catalog.models import (
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["id", "name", "slug", "path", "parent", "created_at", "updated_at"]
-        read_only_fields = ["id", "path", "created_at", "updated_at"]
+        fields = ["id", "name", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -78,35 +78,29 @@ class ReviewSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-# ---------- Product serializers
-class ProductListSerializer(serializers.ModelSerializer):
-    is_on_sale = serializers.BooleanField(read_only=True)
-    current_price = serializers.IntegerField(read_only=True)
-    current_price_display = serializers.CharField(read_only=True)
-
-    images = ProductImageSerializer(many=True, read_only=True)
+class ProductSerializer(serializers.ModelSerializer):
+    # related / computed fields
     category_name = serializers.CharField(source="category.name", read_only=True)
+    images = ProductImageSerializer(many=True, read_only=True)
+    attributes = ProductAttributeSerializer(many=True, read_only=True)
+
+    # expose model property
+    in_stock = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Product
         fields = [
             "id",
             "title",
-            "slug",
             "description",
             "category",
             "category_name",
             "is_active",
-            "price_amount",
-            "price_currency",
-            "sale_price_amount",
+            "price",
             "stock_quantity",
-            # computed
-            "is_on_sale",
-            "current_price",
-            "current_price_display",
-            # relations
+            "in_stock",
             "images",
+            "attributes",
             "created_at",
             "updated_at",
         ]
@@ -114,23 +108,5 @@ class ProductListSerializer(serializers.ModelSerializer):
             "id",
             "created_at",
             "updated_at",
-            "is_on_sale",
-            "current_price",
-            "current_price_display",
-        ]
-
-
-class ProductDetailSerializer(ProductListSerializer):
-    # add attributes and review summary on detail only
-    attributes = ProductAttributeSerializer(many=True, read_only=True)
-    discount_percentage = serializers.FloatField(read_only=True)
-    original_price_dispaly = serializers.CharField(read_only=True)
-    reviews_count = serializers.IntegerField(read_only=True)
-
-    class Meta(ProductListSerializer.Meta):
-        fields = ProductListSerializer.Meta.fields + [
-            "discount_percentage",
-            "original_price_dispaly",
-            "attributes",
-            "reviews_count",
+            "in_stock",
         ]
