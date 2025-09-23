@@ -1,0 +1,19 @@
+# Dockerfile.dev
+FROM node:20-alpine
+
+# Needed for sharp and some native deps
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+# Copy the rest of your app
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+EXPOSE 3000
+
+# Use dev server for hot reload
+CMD ["npm", "run", "dev", "-w"]
