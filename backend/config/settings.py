@@ -1,15 +1,27 @@
+# config/settings.py
 from pathlib import Path
+from datetime import timedelta
+import warnings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# ===== Core =====
 SECRET_KEY = "django-insecure-u#ne8=jf3ui&h8u)$aqp3_l-nb2pjs4=(ie$%+*aoaf5!3y&+7"
 DEBUG = True
+ALLOWED_HOSTS = ["*"]  # OK for dev only
+REST_AUTH = {"USE_JWT": True, "JWT_AUTH_HTTPONLY": False}  # <- required on v3+
+
+# ===== Apps =====
 INSTALLED_APPS = [
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",  # <- required by allauth
+    # 3rd-party
     "rest_framework",
     "django_filters",
     "drf_spectacular",
@@ -18,21 +30,25 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
+    # optional helper (ok to keep or remove):
     "allauth.usersessions",
-    "django.contrib.sites",
-    # Intenrnal
+    "dj_rest_auth",
+    "dj_rest_auth.registration",
+    "rest_framework_simplejwt",
+    "rest_framework.authtoken",  # harmless w/ JWT; required if not using JWT
+    "rest_framework_simplejwt.token_blacklist",  # enable if you want blacklist
+    # Internal
     "apps.common",
     "apps.catalog",
     "apps.checkout",
-    "apps.orders",
-    "apps.payments",
 ]
+
+# ===== Middleware (CSRF removed for dev) =====
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "apps.checkout.middleware.EnsureSessionKeyMiddleware",  # <-- added
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",  # DISABLED (dev only)
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -40,6 +56,7 @@ MIDDLEWARE = [
     "axes.middleware.AxesMiddleware",
 ]
 
+# ===== URLs / Templates / WSGI =====
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
@@ -48,48 +65,41 @@ TEMPLATES = [
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
-                "django.template.context_processors.request",
+                "django.template.context_processors.request",  # required by allauth
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request",
             ],
         },
     },
 ]
-
 WSGI_APPLICATION = "config.wsgi.application"
+
+# ===== DB (dev) =====
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}
 }
 
-
+# ===== Password validation =====
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# ===== Backends =====
 AUTHENTICATION_BACKENDS = [
     "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
+# ===== DRF (JWT-only; no SessionAuthentication => no CSRF) =====
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
@@ -104,48 +114,61 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 24,
 }
 
+# ===== SimpleJWT =====
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),  # dev-friendly
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,  # set True if using blacklist app
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "UPDATE_LAST_LOGIN": True,
+}
+
+# ===== dj-rest-auth (use JWT) =====
+# For older docs: REST_USE_JWT = True
+# For newer releases, either of these is accepted; keep one:
+# REST_USE_JWT = True
+# REST_AUTH = {"USE_JWT": True}  # alternative style on newer versions
+
+# ===== Sites / Allauth =====
 SITE_ID = 1
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
-ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = {"email"}  # how users can log in
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]  # * = required
 
-ACCOUNT_SESSION_REMEMBER = None  # ask user; True=always remember; False=session-only
-
-# Sessions (DB-backed; switch to cached_db when Redis/memcache is available)
+# ===== Sessions (DB) =====
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
-# SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# ===== Security (dev) =====
+SESSION_COOKIE_SECURE = False
+# CSRF entirely disabled by removing middleware & SessionAuth (dev only)
 
-ALLOWED_HOSTS = ["*"]  # OK for dev only
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://127.0.0.1:8000",
-]
-
-
-# Optional: HSTS in production (start small, then raise)
-# SECURE_HSTS_SECONDS = 3600
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-
+# ===== Axes =====
 AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1  # hour
 
+# ===== Email (console in dev) =====
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 DEFAULT_FROM_EMAIL = "no-reply@localhost"
 
+# ===== I18N / TZ =====
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
+# ===== Static =====
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# settings.py (bottom)
+
+warnings.filterwarnings(
+    "ignore",
+    message=r"app_settings\.(USERNAME_REQUIRED|EMAIL_REQUIRED) is deprecated",
+    module=r"dj_rest_auth\.registration\.serializers",
+)
