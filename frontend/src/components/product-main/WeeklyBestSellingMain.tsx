@@ -16,7 +16,7 @@ function toNumber(n: NumLike) {
 
 function formatPrice(n: NumLike) {
     const num = toNumber(n);
-    return num === undefined ? '' : `$${num.toFixed(2)}`;
+    return num === undefined ? '' : `¥${num.toFixed(2)}`;
 }
 
 function deriveDiscountPercent(compareAt: NumLike, price: NumLike) {

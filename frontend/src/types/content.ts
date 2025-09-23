@@ -24,6 +24,7 @@ export type ProductItem = {
 	unitLabel?: string;               // e.g., "500g Pack"
 	discountPercent?: number;         // e.g., 25
 	category?: string;
+	brand?:string;
 	sku?: string;
 	description?: string
 };
@@ -32,4 +33,11 @@ export type BestSellingTab = {
 	id: string | number;   // category id
 	name: string;          // category name (tab label)
 	products: ProductItem[]; // top items in that category
+};
+
+export type BrandItem = {
+	id: string | number;
+	name: string;            // e.g., "Organic Vegetable"
+	imageUrl: string;        // e.g., "/assets/images/category/01.png"
+	href?: string;           // e.g., "/shop?category=veg"
 };
