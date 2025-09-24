@@ -11,7 +11,7 @@ from django.contrib.auth import views as auth_views  # optional
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("catalog/", include("apps.catalog.urls")),
-    path("checkout/", include("apps.checkout.urls")),
+    path("cart/", include("apps.cart.urls")),
     path("orders/", include("apps.orders.urls")),
     path("payments/", include("apps.payments.urls")),
     # path("auth/", include("allauth.urls")),

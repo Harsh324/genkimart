@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable
 from django.db import transaction
 from django.db.models import Prefetch
-from apps.checkout.services import get_cart, clear_cart  # reuse your helpers
+from apps.cart.services import get_cart, clear_cart  # reuse your helpers
 from apps.catalog.models import Product
 from .models import Order, OrderItem, Address
 

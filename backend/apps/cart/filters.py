@@ -1,5 +1,5 @@
 import django_filters
-from apps.checkout.models import CartItem
+from .models import CartItem
 
 
 class CartItemFilter(django_filters.FilterSet):

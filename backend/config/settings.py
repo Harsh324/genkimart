@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     # Internal
     "apps.common",
     "apps.catalog",
-    "apps.checkout",
+    "apps.cart",
     "apps.orders",
 ]
 
