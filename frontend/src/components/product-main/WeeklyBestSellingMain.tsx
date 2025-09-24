@@ -1,220 +1,214 @@
 'use client';
 
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ProductDetails from "@/components/modal/ProductDetails";
-import CompareModal from "@/components/modal/CompareModal";
 import { useCart } from "@/components/header/CartContext";
 import { useWishlist } from "@/components/header/WishlistContext";
-import { useCompare } from '@/components/header/CompareContext';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+import type { ProductItem } from "@/types/content";
 
-interface BlogGridMainProps {
-  Slug: string;
-  ProductImage: string;
-  ProductTitle?: string;
-  Price?: string;
+type NumLike = string | number | undefined;
+
+function toNumber(n: NumLike) {
+    const v = typeof n === 'string' ? parseFloat(n) : n;
+    return Number.isFinite(v as number) ? (v as number) : undefined;
 }
 
-const BlogGridMain: React.FC<BlogGridMainProps> = ({
-  Slug,
-  ProductImage,
-  ProductTitle,
-  Price,
-}) => {
-  
-  type ModalType = 'one' | 'two' | 'three' | null;
-  const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const handleClose = () => setActiveModal(null);
+function formatPrice(n: NumLike) {
+    const num = toNumber(n);
+    return num === undefined ? '' : `¥${num.toFixed(2)}`;
+}
 
-  const { addToCart } = useCart();
-  const { addToWishlist } = useWishlist();
-  const { addToCompare } = useCompare();
+function deriveDiscountPercent(compareAt: NumLike, price: NumLike) {
+    const oldP = toNumber(compareAt);
+    const newP = toNumber(price);
+    if (!oldP || !newP || oldP <= 0 || newP >= oldP) return undefined;
+    return Math.round(((oldP - newP) / oldP) * 100);
+}
 
-  const [added, setAdded] = useState(false);
-  const [wishlisted, setWishlisted] = useState(false);
+type WeeklyBestSellingMainProps = { product: ProductItem };
 
-  const handleAdd = () => {
-    addToCart({
-      id: Date.now(),
-      image: `/assets/images/grocery/${ProductImage}`,
-      title: ProductTitle ?? 'Default Product Title',
-      price: parseFloat(Price ?? '0'),
-      quantity: 1,
-      active: true,
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 5000);
-  };
+const WeeklyBestSellingMain: React.FC<WeeklyBestSellingMainProps> = ({ product }) => {
+    if (!product) return undefined;
+    const computedDiscount = useMemo(() => {
+        return product.discountPercent ??
+            deriveDiscountPercent(product.compareAtPrice, product.price);
+    }, [product]);
 
-  const handleWishlist = () => {
-    addToWishlist({
-      id: Date.now(),
-      image: `/assets/images/grocery/${ProductImage}`,
-      title: ProductTitle ?? 'Default Product Title',
-      price: parseFloat(Price ?? '0'),
-      quantity: 1,
-    });
-    setWishlisted(true);
-    setTimeout(() => setWishlisted(false), 3000);
-  };
+    const imgSrc =
+        product?.image?.startsWith('http') || product?.image?.startsWith('/')
+            ? product.image
+            : `/assets/images/grocery/${product?.image}`;
 
-  const handleCompare = () => {
-    addToCompare({
-      image: `/assets/images/grocery/${ProductImage}`,
-      name: ProductTitle ?? 'Default Product Title',
-      price: Price ?? '0',
-      description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-      rating: 5,
-      ratingCount: 25,
-      weight: '500g',
-      inStock: true,
-    });
-  };
+    const { addToCart } = useCart();
+    const { addToWishlist } = useWishlist();
+    const [added, setAdded] = useState(false);
+    const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+    const [qty, setQty] = useState<number>(1);
 
-  useEffect(() => {
-    const handleQuantityClick = (e: Event) => {
-      const button = e.currentTarget as HTMLElement;
-      const parent = button.closest('.quantity-edit') as HTMLElement | null;
-      if (!parent) return;
+    const safeTitle = product?.title ?? 'Default Product Title';
+    const safePrice = toNumber(product?.price) ?? 0;
 
-      const input = parent.querySelector('.input') as HTMLInputElement | null;
-      const addToCart = parent.querySelector('a.add-to-cart') as HTMLElement | null;
-      if (!input) return;
-
-      let oldValue = parseInt(input.value || '1', 10);
-      let newVal = oldValue;
-
-      if (button.classList.contains('plus')) {
-        newVal = oldValue + 1;
-      } else if (button.classList.contains('minus')) {
-        newVal = oldValue > 1 ? oldValue - 1 : 1;
-      }
-
-      input.value = newVal.toString();
-      if (addToCart) {
-        addToCart.setAttribute('data-quantity', newVal.toString());
-      }
+    const handleAdd = () => {
+        addToCart({
+            id: product.id,
+            image: imgSrc,
+            title: safeTitle,
+            price: safePrice,
+            quantity: qty,
+            active: true,
+            // (optional) keep the raw product for later use in cart line
+            product,
+        });
+        setAdded(true);
+        setTimeout(() => setAdded(false), 5000);
     };
 
-    const buttons = document.querySelectorAll('.quantity-edit .button');
-    buttons.forEach(button => {
-      button.removeEventListener('click', handleQuantityClick);
-      button.addEventListener('click', handleQuantityClick);
-    });
+    const handleWishlist = () =>
+        addToWishlist({
+            id: product.id,
+            image: imgSrc,
+            title: safeTitle,
+            price: safePrice,
+            quantity: 1,
+            // (optional) include product
+            product,
+        });
 
-    return () => {
-      buttons.forEach(button => {
-        button.removeEventListener('click', handleQuantityClick);
-      });
-    };
-  }, []);
+    useEffect(() => {
+        const handleQuantityClick = (e: Event) => {
+            const button = e.currentTarget as HTMLElement;
+            const parent = button.closest('.quantity-edit') as HTMLElement | null;
+            if (!parent) return;
 
-  // tostify
-  const compare = () => toast('Successfully Add To Compare !');
-  const addcart = () => toast('Successfully Add To Cart !');
-  const wishList = () => toast('Successfully Add To Wishlist !');
+            const input = parent.querySelector('.input') as HTMLInputElement | null;
+            const addBtn = parent.querySelector('a.add-to-card') as HTMLElement | null;
+            if (!input) return;
 
-  return (
-    <>
-      <div className="image-and-action-area-wrapper">
-        <a href={`/shop/${Slug}`} className="thumbnail-preview">
-          <div className="badge">
-            <span>
-              25% <br />
-              Off
-            </span>
-            <i className="fa-solid fa-bookmark" />
-          </div>
-          <img src={`/assets/images/grocery/${ProductImage}`} alt="grocery" />
-        </a>
-        <div className="action-share-option">
-          <span
-            className="single-action openuptip message-show-action"
-            data-flow="up"
-            title="Add To Wishlist"
-            onClick={() => {
-              handleWishlist();
-              wishList();
-            }}
-          >
-            <i className="fa-light fa-heart" />
-          </span>
-          <span
-            className="single-action openuptip"
-            data-flow="up"
-            title="Compare"
-            onClick={() => {
-              handleCompare();
-              compare();
-            }}
-          >
-            <i className="fa-solid fa-arrows-retweet" />
-          </span>
-          <span
-            className="single-action openuptip cta-quickview product-details-popup-btn"
-            data-flow="up"
-            title="Quick View"
-            onClick={() => setActiveModal('two')}
-          >
-            <i className="fa-regular fa-eye" />
-          </span>
-        </div>
-      </div>
+            const oldValue = parseInt(input.value || '1', 10);
+            const newVal = button.classList.contains('plus')
+                ? oldValue + 1
+                : Math.max(1, oldValue - 1);
 
-      <div className="body-content">
-        <a href={`/shop/${Slug}`}>
-          <h4 className="title">{ProductTitle ?? 'How to growing your business'}</h4>
-        </a>
-        <span className="availability">500g Pack</span>
-        <div className="price-area">
-          <span className="current">{`$${Price}`}</span>
-          <div className="previous">$36.00</div>
-        </div>
+            input.value = String(newVal);
+            if (addBtn) addBtn.setAttribute('data-quantity', String(newVal));
+        };
 
-        <div className="cart-counter-action">
-          <div className="quantity-edit">
-            <input type="text" className="input" defaultValue={1} />
-            <div className="button-wrapper-action">
-              <button className="button minus">
-                <i className="fa-regular fa-chevron-down" />
-              </button>
-              <button className="button plus">
-                +<i className="fa-regular fa-chevron-up" />
-              </button>
+        const buttons = document.querySelectorAll('.quantity-edit .button');
+        buttons.forEach((b) => {
+            b.removeEventListener('click', handleQuantityClick);
+            b.addEventListener('click', handleQuantityClick);
+        });
+
+        return () => buttons.forEach((b) => b.removeEventListener('click', handleQuantityClick));
+    }, []);
+
+    return (
+        <>
+            <div className="image-and-action-area-wrapper">
+                <a href={`/shop/${product.slug}`} className="thumbnail-preview">
+                    {computedDiscount !== undefined && (
+                        <div className="badge">
+                            <span>
+                                {computedDiscount}% <br />
+                                Off
+                            </span>
+                            <i className="fa-solid fa-bookmark" />
+                        </div>
+                    )}
+                    <img src={imgSrc} alt={safeTitle} />
+                </a>
+
+                <div className="action-share-option">
+                    <span
+                        className="single-action openuptip message-show-action"
+                        data-flow="up"
+                        title="Add To Wishlist"
+                        onClick={handleWishlist}
+                    >
+                        <i className="fa-light fa-heart" />
+                    </span>
+
+                    <span
+                        className="single-action openuptip cta-quickview product-details-popup-btn"
+                        data-flow="up"
+                        title="Quick View"
+                        onClick={() => setIsQuickViewOpen(true)}
+                    >
+                        <i className="fa-regular fa-eye" />
+                    </span>
+                </div>
             </div>
-          </div>
-          <a
-            href="#"
-            className="rts-btn btn-primary add-to-card radious-sm with-icon"
-            onClick={e => {
-              e.preventDefault();
-              handleAdd();
-              addcart();
-            }}
-          >
-            <div className="btn-text">{added ? 'Added' : 'Add'}</div>
-            <div className="arrow-icon">
-              <i className={added ? "fa-solid fa-check" : "fa-regular fa-cart-shopping"} />
-            </div>
-            <div className="arrow-icon">
-              <i className={added ? "fa-solid fa-check" : "fa-regular fa-cart-shopping"} />
-            </div>
-          </a>
-        </div>
-      </div>
 
-      <CompareModal show={activeModal === 'one'} handleClose={handleClose} />
-      <ProductDetails
-        show={activeModal === 'two'}
-        handleClose={handleClose}
-        productImage={`/assets/images/grocery/${ProductImage}`}
-        productTitle={ProductTitle ?? 'Default Product Title'}
-        productPrice={Price ?? '0'}
-      />
-    </>
-  );
+            <div className="body-content">
+                <a href={`/shop/${product.slug}`}>
+                    <h4 className="title">{safeTitle}</h4>
+                </a>
+
+                {product.unitLabel && <span className="availability">{product.unitLabel}</span>}
+
+                <div className="price-area">
+                    <span className="current">{formatPrice(product.price)}</span>
+                    {product.compareAtPrice !== undefined && (
+                        <div className="previous">{formatPrice(product.compareAtPrice)}</div>
+                    )}
+                </div>
+
+                <div className="cart-counter-action">
+                    <div className="quantity-edit">
+                        <input
+                            type="text"
+                            className="input"
+                            value={qty}
+                            onChange={(e) => {
+                                const v = parseInt(e.target.value || '1', 10);
+                                setQty(Number.isFinite(v) && v > 0 ? v : 1);
+                            }}
+                        />
+                        <div className="button-wrapper-action">
+                            <button className="button minus" onClick={() => setQty((q) => Math.max(1, q - 1))}>
+                                <i className="fa-regular fa-chevron-down" />
+                            </button>
+                            <button className="button plus" onClick={() => setQty((q) => q + 1)}>
+                                +<i className="fa-regular fa-chevron-up" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <a
+                        href="#"
+                        className="rts-btn btn-primary add-to-card radious-sm with-icon"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            handleAdd();
+                        }}
+                    >
+                        <div className="btn-text">{added ? 'Added' : 'Add'}</div>
+                        <div className="arrow-icon">
+                            <i className={added ? 'fa-solid fa-check' : 'fa-regular fa-cart-shopping'} />
+                        </div>
+                        <div className="arrow-icon">
+                            <i className={added ? 'fa-solid fa-check' : 'fa-regular fa-cart-shopping'} />
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <ProductDetails
+                show={isQuickViewOpen}
+                handleClose={() => setIsQuickViewOpen(false)}
+                product={{
+                    ...product,
+                    // ensure image is the resolved absolute path you display in the card
+                    image: imgSrc,
+                    // make sure number-like fields are numbers if ProductDetails expects numbers
+                    price: safePrice,
+                    compareAtPrice: toNumber(product.compareAtPrice),
+                    discountPercent: computedDiscount,
+                }}
+            />
+        </>
+    );
 };
 
-export default BlogGridMain;
+export default WeeklyBestSellingMain;

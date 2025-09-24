@@ -29,8 +29,8 @@ const CartDropdown: React.FC = () => {
           Shopping Cart ({activeItems.length.toString().padStart(2, '0')})
         </h5>
 
-        {activeItems.map((item) => (
-          <div key={item.id} className="cart-item-1 border-top">
+        {activeItems.map((item, idx) => (
+          <div key={`${item.title}::${item.image}::${idx}`} className="cart-item-1 border-top">
             <div className="img-name">
               <div className="close section-activation" onClick={() => removeFromCart(item.id)}>
                 <i className="fa-regular fa-x" />

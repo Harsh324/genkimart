@@ -1,92 +1,96 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface WishlistItem {
-  id: number;
-  image: string;
-  title: string;
-  price: number;
-  quantity: number;
+    id: number;
+    image: string;
+    title: string;
+    price: number;
+    quantity: number;
 }
 
+type AddOpts = { silent?: boolean };
+
 interface WishlistContextProps {
-  wishlistItems: WishlistItem[];
-  addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: number) => void;
-  updateItemQuantity: (id: number, quantity: number) => void;
-  isWishlistLoaded: boolean;
+    wishlistItems: WishlistItem[];
+    addToWishlist: (item: WishlistItem, opts?: AddOpts) => void;
+    removeFromWishlist: (id: number, opts?: AddOpts) => void;
+    clearWishlist: (opts?: AddOpts) => void;
+    updateItemQuantity: (id: number, quantity: number) => void;
+    isWishlistLoaded: boolean;
 }
 
 const WishlistContext = createContext<WishlistContextProps | undefined>(undefined);
 
 export const useWishlist = (): WishlistContextProps => {
-  const context = useContext(WishlistContext);
-  if (!context) {
-    throw new Error('useWishlist must be used within a WishlistProvider');
-  }
-  return context;
+    const ctx = useContext(WishlistContext);
+    if (!ctx) throw new Error('useWishlist must be used within a WishlistProvider');
+    return ctx;
 };
 
 export const WishlistProvider = ({ children }: { children: React.ReactNode }) => {
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const [isWishlistLoaded, setIsWishlistLoaded] = useState(false);
+    const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
+    const [isWishlistLoaded, setIsWishlistLoaded] = useState(false);
 
-  // Load from localStorage on first mount
-  useEffect(() => {
-    const storedWishlist = localStorage.getItem('wishlist');
-    if (storedWishlist) {
-      try {
-        setWishlistItems(JSON.parse(storedWishlist));
-      } catch (error) {
-        console.error('Failed to parse wishlist from localStorage:', error);
-        localStorage.removeItem('wishlist');
-      }
-    }
-    setIsWishlistLoaded(true);
-  }, []);
+    // Hydrate (silent)
+    useEffect(() => {
+        const stored = localStorage.getItem('wishlist');
+        if (stored) {
+            try { setWishlistItems(JSON.parse(stored)); }
+            catch { localStorage.removeItem('wishlist'); }
+        }
+        setIsWishlistLoaded(true);
+    }, []);
 
-  // Save to localStorage whenever wishlist changes
-  useEffect(() => {
-    if (isWishlistLoaded) {
-      localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
-    }
-  }, [wishlistItems, isWishlistLoaded]);
+    // Persist
+    useEffect(() => {
+        if (isWishlistLoaded) localStorage.setItem('wishlist', JSON.stringify(wishlistItems));
+    }, [wishlistItems, isWishlistLoaded]);
 
-  // Add to wishlist (no duplicates)
-  const addToWishlist = (item: WishlistItem) => {
-    setWishlistItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
-      if (existing) return prev;
-      return [...prev, item];
-    });
-  };
+    const addToWishlist = (item: WishlistItem, opts?: AddOpts) => {
+        setWishlistItems(prev => {
+            const exists = prev.some(i => i.title === item.title && i.image === item.image);
+            if (exists) return prev;
+            return [...prev, item];
+        });
+        if (isWishlistLoaded && !opts?.silent) {
+            toast.success('Added to Wishlist!', { containerId: 'app-toaster' });
+        }
+    };
 
-  // Remove from wishlist
-  const removeFromWishlist = (id: number) => {
-    setWishlistItems((prev) => prev.filter((item) => item.id !== id));
-  };
+    const removeFromWishlist = (id: number, opts?: AddOpts) => {
+        setWishlistItems(prev => prev.filter(i => i.id !== id));
+        if (isWishlistLoaded && !opts?.silent) {
+            toast.info('Removed from Wishlist', { containerId: 'app-toaster' });
+        }
+    };
 
-  // Update quantity
-  const updateItemQuantity = (id: number, quantity: number) => {
-    setWishlistItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-      )
+    const clearWishlist = (opts?: AddOpts) => {
+        setWishlistItems([]);
+        if (isWishlistLoaded && !opts?.silent) {
+            toast.info('Wishlist cleared', { containerId: 'app-toaster' });
+        }
+    };
+
+    const updateItemQuantity = (id: number, quantity: number) => {
+        setWishlistItems(prev =>
+            prev.map(i => (i.id === id ? { ...i, quantity: Math.max(1, quantity) } : i))
+        );
+    };
+
+    const value = useMemo(
+        () => ({
+            wishlistItems,
+            addToWishlist,
+            removeFromWishlist,
+            clearWishlist,
+            updateItemQuantity,
+            isWishlistLoaded,
+        }),
+        [wishlistItems, isWishlistLoaded]
     );
-  };
 
-  return (
-    <WishlistContext.Provider
-      value={{
-        wishlistItems,
-        addToWishlist,
-        removeFromWishlist,
-        updateItemQuantity,
-        isWishlistLoaded,
-      }}
-    >
-      {children}
-    </WishlistContext.Provider>
-  );
+    return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 };

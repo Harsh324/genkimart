@@ -41,7 +41,7 @@ const Sidebar = () => {
                     </button>
                 </form>
                 <div className="mobile-menu-nav-area tab-nav-btn mt--20">
-                    <nav>
+                    {/* <nav>
                         <div className="nav nav-tabs" id="nav-tab" role="tablist">
                             <button
                                onClick={() => setActiveTab('tab1')}
@@ -54,7 +54,7 @@ const Sidebar = () => {
                                 Category
                             </button>
                         </div>
-                    </nav>
+                    </nav> */}
                     <div className="tab-content" id="nav-tabContent">
                         {activeTab === 'tab1' &&
                         <div>
@@ -64,13 +64,13 @@ const Sidebar = () => {
                             </div>
                             {/* mobile menu area end */}
                         </div>}
-                        {activeTab === 'tab2' &&
+                        {/* {activeTab === 'tab2' &&
                         <div>
                             <div className="category-btn category-hover-header menu-category">
                                 <CategoryMenu/>
                             </div>
                         </div>
-                        }
+                        } */}
                     </div>
                 </div>
                 {/* button area wrapper start */}

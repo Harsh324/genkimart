@@ -44,71 +44,47 @@ function FooterOne() {
                                 {/* single footer area wrapper */}
                                 {/* single footer area wrapper */}
                                 <div className="single-footer-wized">
-                                    <h3 className="footer-title">Our Stores</h3>
+                                    <h3 className="footer-title">Information</h3>
                                     <div className="footer-nav">
                                         <ul>
-                                            <li>
-                                                <a href="#">Delivery Information</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Privacy Policy</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Terms &amp; Conditions</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Support Center</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Careers</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                {/* single footer area wrapper */}
-                                {/* single footer area wrapper */}
-                                <div className="single-footer-wized">
-                                    <h3 className="footer-title">Shop Categories</h3>
-                                    <div className="footer-nav">
-                                        <ul>
-                                            <li>
-                                                <a href="#">Contact Us</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Information</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">About Us</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Careers</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Nest Stories</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                                {/* single footer area wrapper */}
-                                {/* single footer area wrapper */}
-                                <div className="single-footer-wized">
-                                    <h3 className="footer-title">Useful Links</h3>
-                                    <div className="footer-nav">
-                                        <ul>
-                                            <li>
-                                                <a href="#">Cancellation &amp; Returns</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Report Infringement</a>
-                                            </li>
-                                            <li>
-                                                <a href="#">Payments</a>
-                                            </li>
                                             <li>
                                                 <a href="#">Shipping</a>
                                             </li>
                                             <li>
                                                 <a href="#">FAQ</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {/* single footer area wrapper */}
+                                {/* single footer area wrapper */}
+                                <div className="single-footer-wized">
+                                    <h3 className="footer-title">Know more ?</h3>
+                                    <div className="footer-nav">
+                                        <ul>
+                                            <li>
+                                                <a href="/contact">Contact Us</a>
+                                            </li>
+                                            <li>
+                                                <a href="/about">About Us</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                {/* single footer area wrapper */}
+                                {/* single footer area wrapper */}
+                                <div className="single-footer-wized">
+                                    <h3 className="footer-title">Terms & Conditions</h3>
+                                    <div className="footer-nav">
+                                        <ul>
+                                            <li>
+                                                <a href="/privacy-policy">Privacy Policy</a>
+                                            </li>
+                                            <li>
+                                                <a href="/terms-condition">Terms &amp; Conditions</a>
+                                            </li>
+                                            <li>
+                                                <a href="#">Cancellation &amp; Returns</a>
                                             </li>
                                         </ul>
                                     </div>
@@ -183,13 +159,8 @@ function FooterOne() {
                         <div className="col-lg-12">
                             <div className="copyright-between-1">
                                 <p className="disc">
-                                    Copyright 2025 <a href="#">©Ekomart</a>. All rights reserved.
+                                    Copyright 2025 <a href="/about">©Genkimart</a>. All rights reserved.
                                 </p>
-                                <a href="#" className="playstore-app-area">
-                                    <span>Download App</span>
-                                    <img src="assets/images/payment/02.png" alt="" />
-                                    <img src="assets/images/payment/03.png" alt="" />
-                                </a>
                             </div>
                         </div>
                     </div>

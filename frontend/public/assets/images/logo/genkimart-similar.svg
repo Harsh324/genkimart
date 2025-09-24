@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="320" viewBox="0 0 1024 320" xmlns="http://www.w3.org/2000/svg">
+
+
+<!-- Reuse background or base shape if exists -->
+<rect x="0" y="0" width="1024" height="320" fill="white"/>
+
+<!-- Icon (adapted from original style, simplified as placeholder) -->
+<circle cx="160" cy="160" r="100" fill="url(#grad1)"/>
+<text x="160" y="170" text-anchor="middle" font-size="64" font-family="sans-serif" fill="white">G</text>
+
+<!-- Wordmark -->
+<text x="320" y="185" font-size="96" font-family="sans-serif" font-weight="700" fill="url(#grad1)">GenkiMart</text>
+
+</svg>

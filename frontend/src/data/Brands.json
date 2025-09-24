@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "name": "Haldiram",
+    "imageUrl": "/assets/images/category/01.png",
+    "href": "/shop"
+  },
+  {
+    "id": 2,
+    "name": "Amul",
+    "imageUrl": "/assets/images/category/02.png",
+    "href": "/shop"
+  },
+  {
+    "id": 3,
+    "name": "Gits",
+    "imageUrl": "/assets/images/category/03.png",
+    "href": "/shop"
+  },
+  {
+    "id": 4,
+    "name": "Ambika",
+    "imageUrl": "/assets/images/category/04.png",
+    "href": "/shop"
+  },
+  {
+    "id": 5,
+    "name": "Ashirwaad",
+    "imageUrl": "/assets/images/category/05.png",
+    "href": "/shop"
+  }
+]
