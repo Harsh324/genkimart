@@ -41,6 +41,8 @@ class OrderSerializer(serializers.ModelSerializer):
             "status",
             "subtotal_amount",
             "items",
+            "shipping_address",
+            "billing_address",
             "created_at",
             "updated_at",
         ]
