@@ -30,8 +30,8 @@ const WishList: React.FC = () => {
                     Wishlist ({wishlistItems.length.toString().padStart(2, '0')})
                 </h5>
 
-                {wishlistItems.map((item) => (
-                    <div key={item.id} className="cart-item-1 border-top">
+                {wishlistItems.map((item, idx) => (
+                    <div key={`${item.title}::${item.image}::${idx}`} className="cart-item-1 border-top">
                         <div className="img-name">
                             <div className="close section-activation" onClick={() => removeFromWishlist(item.id)}>
                                 <i className="fa-regular fa-x" />

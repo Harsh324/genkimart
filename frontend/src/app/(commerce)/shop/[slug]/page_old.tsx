@@ -169,8 +169,8 @@ const CompareElements: React.FC = () => {
 
                           <div className="share-option-shop-details">
                             <div className="single-share-option"><div className="icon"><i className="fa-regular fa-heart" /></div><span>Add To Wishlist</span></div>
-                            <div className="single-share-option"><div className="icon"><i className="fa-solid fa-share" /></div><span>Share On social</span></div>
-                            <div className="single-share-option"><div className="icon"><i className="fa-light fa-code-compare" /></div><span>Compare</span></div>
+                            {/* <div className="single-share-option"><div className="icon"><i className="fa-solid fa-share" /></div><span>Share On social</span></div>
+                            <div className="single-share-option"><div className="icon"><i className="fa-light fa-code-compare" /></div><span>Compare</span></div> */}
                           </div>
                         </div>
                       </div>
@@ -504,7 +504,7 @@ const CompareElements: React.FC = () => {
       </div>
 
       <RelatedProduct />
-      <ShortService />
+      {/* <ShortService /> */}
       <FooterOne />
       {/* <ToastContainer /> */}
     </div>

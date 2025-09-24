@@ -11,47 +11,48 @@ import { CompareProvider } from "../components/header/CompareContext";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import ClientToaster from "@/components/common/ClientToaster";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+	variable: "--font-geist-sans",
+	subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+	variable: "--font-geist-mono",
+	subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Genkimart-Grocery-Store(e-Commerce)",
-  description: "One stop for Grcoery shopping",
-  icons: {
-    icon: [
-      {
-        url: "/assets/images/fav.png",
-        type: "image/x-icon",
-      },
-    ],
-  },
+	title: "Genkimart-Grocery-Store(e-Commerce)",
+	description: "One stop for Grocery shopping",
+	icons: {
+		icon: [
+			{
+				url: "/assets/images/fav.png",
+				type: "image/x-icon",
+			},
+		],
+	},
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {/* <CompareProvider> */}
-          <WishlistProvider>
-            <CartProvider>
-              {children}
-              <ToastContainer position="top-right" autoClose={3000} />
-            </CartProvider>
-          </WishlistProvider>
-        {/* </CompareProvider> */}
-      </body>
-    </html>
-  );
+	return (
+		<html lang="en">
+			<body className={`${geistSans.variable} ${geistMono.variable}`}>
+				{/* <CompareProvider> */}
+				<WishlistProvider>
+					<CartProvider>
+						{children}
+						<ClientToaster />
+					</CartProvider>
+				</WishlistProvider>
+				{/* </CompareProvider> */}
+			</body>
+		</html>
+	);
 }
