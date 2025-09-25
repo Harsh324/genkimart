@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: app-db
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  backned:
+    build:
+      context: ../
+      dockerfile: backend/Dockerfile
+      args:
+        - UV_INCLUDE_DEV={{UV_INCLUDE_DEV}}
+    container_name: genkimart_backend
+    env_file:
+      - ../env/.env.prod
+    working_dir: /app/backend
+    command: ["/usr/bin/tini","--","gunicorn","config.wsgi:application","--bind","0.0.0.0:8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../static:/static
+      - ../media:/media
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: app-nginx
+    depends_on:
+      - web
+    ports:
+      - "8080:80"
+    volumes:
+      - ../nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ../static:/static:ro
+      - ../media:/media:ro
+    restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.utils import timezone
 from faker import Faker
 
-from apps.checkout.models import Cart, CartItem, Coupon
+from apps.cart.models import Cart, CartItem, Coupon
 from apps.catalog.models import Product  # assumes you have Product model
 
 fake = Faker()
