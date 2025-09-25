@@ -1,0 +1,1133 @@
+openapi: 3.1.0
+info:
+  title: Shop API (Session Auth)
+  version: 0.1.0
+  description: |
+    E-commerce API for a Next.js frontend with a Django/DRF backend using cookie-based sessions and CSRF protection.
+    - Auth: Session cookie (sessionid) + CSRF header (X-CSRFToken) for unsafe methods.
+    - Prices: minor units (integers, e.g., cents).
+    - Pagination: cursor-based.
+    - i18n: optional locale on read endpoints.
+    - All times are ISO8601 UTC.
+
+servers:
+  - url: https://api.example.com/v1
+
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+  - name: Catalog
+  - name: Search
+  - name: Cart
+  - name: Checkout
+  - name: Orders
+  - name: Payments
+  - name: Webhooks
+
+# Safe reads default to requiring only session if private; most public reads don't require auth.
+security:
+  - {}
+
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: sessionid           # Django default; rename if customized
+      description: Session cookie set on successful login.
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-CSRFToken
+      description: Required for unsafe methods (POST/PATCH/DELETE). Obtain via /auth/csrf.
+  parameters:
+    pageSize:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    after:
+      name: after
+      in: query
+      schema: { type: string, description: Cursor for pagination }
+    locale:
+      name: locale
+      in: query
+      schema: { type: string, description: BCP-47 locale, example: en-US }
+    cartIdHeader:
+      name: X-Cart-Id
+      in: header
+      required: false
+      description: Guest cart ID (server may also set Set-Cart-Id cookie/header)
+      schema: { type: string }
+    productSlug:
+      name: productSlug
+      in: path
+      required: true
+      schema: { type: string }
+    categorySlug:
+      name: categorySlug
+      in: path
+      required: true
+      schema: { type: string }
+    variantId:
+      name: variantId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    reviewId:
+      name: reviewId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    itemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    addressId:
+      name: addressId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    orderId:
+      name: orderId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    paymentIntentId:
+      name: intentId
+      in: path
+      required: true
+      schema: { type: string }
+  headers:
+    SetCartId:
+      description: Server may set/rotate cart ID for guest carts.
+      schema: { type: string }
+    XNextCursor:
+      description: Cursor for next page (nullable).
+      schema: { type: string, nullable: true }
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Forbidden / CSRF failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    UnprocessableEntity:
+      description: Validation error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ValidationError' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/Error'
+      properties:
+        code: { type: string, example: validation_error }
+    PaginationMeta:
+      type: object
+      properties:
+        limit: { type: integer }
+        next_cursor: { type: string, nullable: true }
+    Money:
+      type: object
+      properties:
+        amount: { type: integer, description: Minor units (e.g., cents) }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+    MediaImage:
+      type: object
+      properties:
+        url: { type: string, format: uri }
+        alt: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        first_name: { type: string }
+        last_name: { type: string }
+        is_verified: { type: boolean }
+        created_at: { type: string, format: date-time }
+    UserUpdate:
+      type: object
+      properties:
+        first_name: { type: string }
+        last_name: { type: string }
+    Address:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        line1: { type: string }
+        line2: { type: string, nullable: true }
+        city: { type: string }
+        state: { type: string }
+        postal_code: { type: string }
+        country: { type: string, minLength: 2, maxLength: 2 }
+        is_default_billing: { type: boolean }
+        is_default_shipping: { type: boolean }
+    AddressCreate:
+      allOf:
+        - $ref: '#/components/schemas/Address'
+      required: [line1, city, state, postal_code, country]
+    AddressUpdate:
+      type: object
+      properties:
+        line1: { type: string }
+        line2: { type: string, nullable: true }
+        city: { type: string }
+        state: { type: string }
+        postal_code: { type: string }
+        country: { type: string, minLength: 2, maxLength: 2 }
+        is_default_billing: { type: boolean }
+        is_default_shipping: { type: boolean }
+    Category:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        parent_id: { type: string, format: uuid, nullable: true }
+        path: { type: string, description: e.g., "/men/shoes" }
+    Product:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        category: { $ref: '#/components/schemas/Category' }
+        images:
+          type: array
+          items: { $ref: '#/components/schemas/MediaImage' }
+        variants:
+          type: array
+          items: { $ref: '#/components/schemas/Variant' }
+        attributes:
+          type: object
+          additionalProperties: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Variant:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        sku: { type: string }
+        title: { type: string }
+        price: { $ref: '#/components/schemas/Money' }
+        inventory: { $ref: '#/components/schemas/Inventory' }
+        options:
+          type: object
+          additionalProperties: { type: string }  # e.g., {"size":"M","color":"Black"}
+    Inventory:
+      type: object
+      properties:
+        policy:
+          type: string
+          enum: [deny, allow_oversell, backorder]
+        available: { type: integer, minimum: 0 }
+    Review:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        product_id: { type: string, format: uuid }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        title: { type: string }
+        body: { type: string }
+        author_name: { type: string }
+        created_at: { type: string, format: date-time }
+    CartItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        product_id: { type: string, format: uuid }
+        variant_id: { type: string, format: uuid }
+        title: { type: string }
+        variant_title: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        unit_price: { $ref: '#/components/schemas/Money' }
+        line_total: { $ref: '#/components/schemas/Money' }
+    Cart:
+      type: object
+      properties:
+        id: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+        subtotal: { $ref: '#/components/schemas/Money' }
+        discount_total: { $ref: '#/components/schemas/Money' }
+        shipping_total: { $ref: '#/components/schemas/Money' }
+        tax_total: { $ref: '#/components/schemas/Money' }
+        total: { $ref: '#/components/schemas/Money' }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        updated_at: { type: string, format: date-time }
+        applied_coupon: { type: string, nullable: true }
+    ShippingQuote:
+      type: object
+      properties:
+        service: { type: string, example: standard }
+        carrier: { type: string, example: UPS }
+        eta_days: { type: integer, minimum: 0 }
+        cost: { $ref: '#/components/schemas/Money' }
+    OrderItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        product_id: { type: string, format: uuid }
+        variant_id: { type: string, format: uuid }
+        title: { type: string }
+        variant_title: { type: string }
+        quantity: { type: integer, minimum: 1 }
+        unit_price: { $ref: '#/components/schemas/Money' }
+        line_total: { $ref: '#/components/schemas/Money' }
+    Order:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        number: { type: string }
+        status:
+          type: string
+          enum: [pending, awaiting_payment, paid, fulfilled, cancelled, refunded, partially_refunded]
+        payment_status:
+          type: string
+          enum: [unpaid, requires_action, processing, paid, failed, refunded, partial]
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+        amount_subtotal: { $ref: '#/components/schemas/Money' }
+        amount_discount: { $ref: '#/components/schemas/Money' }
+        amount_shipping: { $ref: '#/components/schemas/Money' }
+        amount_tax: { $ref: '#/components/schemas/Money' }
+        amount_total: { $ref: '#/components/schemas/Money' }
+        shipping_address: { $ref: '#/components/schemas/Address' }
+        billing_address: { $ref: '#/components/schemas/Address' }
+        created_at: { type: string, format: date-time }
+        paid_at: { type: string, format: date-time, nullable: true }
+    PaymentIntent:
+      type: object
+      properties:
+        id: { type: string }
+        provider: { type: string, enum: [stripe, cod] }
+        client_secret: { type: string, nullable: true }
+        status: { type: string, enum: [requires_payment_method, requires_action, processing, succeeded, canceled] }
+        order_id: { type: string, format: uuid }
+        amount: { $ref: '#/components/schemas/Money' }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        return_url: { type: string, format: uri, nullable: true }
+    WebhookEvent:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }           # e.g., payment_intent.succeeded
+        created: { type: integer }       # unix ts
+        data:
+          type: object
+          additionalProperties: true
+        signature: { type: string }
+
+paths:
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness/readiness probe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+
+  # ---------- AUTH ----------
+  /auth/csrf:
+    get:
+      tags: [Auth]
+      summary: Get/rotate CSRF cookie
+      description: Returns a csrftoken cookie. Copy its value into X-CSRFToken for unsafe requests.
+      security: []   # public
+      responses:
+        '204':
+          description: No Content
+          headers:
+            Set-Cookie:
+              description: Sets/rotates csrftoken cookie
+              schema: { type: string }
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user and start a session
+      security:
+        - cookieSession: []   # optional if you auto-login after register
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                first_name: { type: string }
+                last_name: { type: string }
+      responses:
+        '204':
+          description: Created + logged in. Sets sessionid & csrftoken cookies.
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Session login (sets cookie; CSRF required)
+      security:
+        - csrfHeader: []      # CSRF protected login form; no session required to call
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                remember_me: { type: boolean }
+      responses:
+        '204':
+          description: No Content. Sets Set-Cookie: sessionid; may set csrftoken.
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Session logout (clears cookie)
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '204':
+          description: No Content
+
+  # ---------- USERS ----------
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Get current user
+      security:
+        - cookieSession: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+    patch:
+      tags: [Users]
+      summary: Update current user
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /users/me/addresses:
+    get:
+      tags: [Users]
+      summary: List my addresses
+      security:
+        - cookieSession: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Address' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Users]
+      summary: Add an address
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddressCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Address' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users/me/addresses/{addressId}:
+    parameters:
+      - $ref: '#/components/parameters/addressId'
+    patch:
+      tags: [Users]
+      summary: Update an address
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddressUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Address' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Users]
+      summary: Delete an address
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '204': { description: No Content }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ---------- CATALOG ----------
+  /categories:
+    get:
+      tags: [Catalog]
+      summary: List categories
+      parameters:
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/after'
+        - $ref: '#/components/parameters/locale'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor: { $ref: '#/components/headers/XNextCursor' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Category' }
+                  page: { $ref: '#/components/schemas/PaginationMeta' }
+
+  /categories/{categorySlug}:
+    parameters:
+      - $ref: '#/components/parameters/categorySlug'
+      - $ref: '#/components/parameters/locale'
+    get:
+      tags: [Catalog]
+      summary: Get category by slug
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /products:
+    get:
+      tags: [Catalog]
+      summary: List products
+      parameters:
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/after'
+        - $ref: '#/components/parameters/locale'
+        - in: query
+          name: q
+          schema: { type: string, description: Full-text search }
+        - in: query
+          name: category
+          schema: { type: string, description: Category slug }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [price_asc, price_desc, newest, popular]
+        - in: query
+          name: price_min
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: price_max
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: in_stock
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor: { $ref: '#/components/headers/XNextCursor' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+                  page: { $ref: '#/components/schemas/PaginationMeta' }
+
+  /products/{productSlug}:
+    parameters:
+      - $ref: '#/components/parameters/productSlug'
+      - $ref: '#/components/parameters/locale'
+    get:
+      tags: [Catalog]
+      summary: Get product by slug
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /products/{productSlug}/variants:
+    parameters:
+      - $ref: '#/components/parameters/productSlug'
+    get:
+      tags: [Catalog]
+      summary: List variants for a product
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Variant' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /products/{productSlug}/reviews:
+    parameters:
+      - $ref: '#/components/parameters/productSlug'
+    get:
+      tags: [Catalog]
+      summary: List product reviews
+      parameters:
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/after'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Next-Cursor: { $ref: '#/components/headers/XNextCursor' }
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Review' }
+                  page: { $ref: '#/components/schemas/PaginationMeta' }
+    post:
+      tags: [Catalog]
+      summary: Create a review
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating, title, body]
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                title: { type: string }
+                body: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /products/{productSlug}/reviews/{reviewId}:
+    parameters:
+      - $ref: '#/components/parameters/productSlug'
+      - $ref: '#/components/parameters/reviewId'
+    patch:
+      tags: [Catalog]
+      summary: Update my review
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                title: { type: string }
+                body: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Catalog]
+      summary: Delete my review
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '204': { description: No Content }
+
+  # ---------- SEARCH ----------
+  /search/suggestions:
+    get:
+      tags: [Search]
+      summary: Autocomplete suggestions
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/locale'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        term: { type: string }
+                        score: { type: number }
+
+  # ---------- CART ----------
+  /cart:
+    get:
+      tags: [Cart]
+      summary: Get current cart (guest or session user)
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      responses:
+        '200':
+          description: OK
+          headers:
+            Set-Cart-Id: { $ref: '#/components/headers/SetCartId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+    post:
+      tags: [Cart]
+      summary: Initialize/merge cart into user account
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  /cart/items:
+    post:
+      tags: [Cart]
+      summary: Add item to cart
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []   # guest carts also need CSRF for unsafe methods
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_id, variant_id, quantity]
+              properties:
+                product_id: { type: string, format: uuid }
+                variant_id: { type: string, format: uuid }
+                quantity: { type: integer, minimum: 1 }
+      responses:
+        '201':
+          description: Created
+          headers:
+            Set-Cart-Id: { $ref: '#/components/headers/SetCartId' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /cart/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/itemId'
+      - $ref: '#/components/parameters/cartIdHeader'
+    patch:
+      tags: [Cart]
+      summary: Update cart item
+      security:
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity: { type: integer, minimum: 0 }
+                variant_id: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Cart]
+      summary: Remove cart item
+      security:
+        - csrfHeader: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  /cart/clear:
+    post:
+      tags: [Cart]
+      summary: Clear cart
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []
+      responses:
+        '204': { description: No Content }
+
+  /cart/coupon:
+    post:
+      tags: [Cart]
+      summary: Apply coupon code
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+    delete:
+      tags: [Cart]
+      summary: Remove coupon
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+
+  # ---------- CHECKOUT HELPERS ----------
+  /checkout/shipping-quotes:
+    post:
+      tags: [Checkout]
+      summary: Get shipping quotes for current cart
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destination_address_id: { type: string, format: uuid, nullable: true }
+                destination_inline: { $ref: '#/components/schemas/Address' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ShippingQuote' }
+
+  /checkout/tax-estimate:
+    post:
+      tags: [Checkout]
+      summary: Estimate tax for current cart
+      parameters:
+        - $ref: '#/components/parameters/cartIdHeader'
+      security:
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                destination_address_id: { type: string, format: uuid, nullable: true }
+                destination_inline: { $ref: '#/components/schemas/Address' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Money' }
+
+  # ---------- ORDERS ----------
+  /orders:
+    get:
+      tags: [Orders]
+      summary: List my orders
+      security:
+        - cookieSession: []
+      parameters:
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/after'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+                  page: { $ref: '#/components/schemas/PaginationMeta' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Orders]
+      summary: Create order from current cart
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shipping_address_id, billing_address_id]
+              properties:
+                shipping_address_id: { type: string, format: uuid }
+                billing_address_id: { type: string, format: uuid }
+                shipping_method: { type: string, nullable: true }
+                notes: { type: string, maxLength: 500, nullable: true }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '422': { $ref: '#/components/responses/UnprocessableEntity' }
+
+  /orders/{orderId}:
+    parameters:
+      - $ref: '#/components/parameters/orderId'
+    get:
+      tags: [Orders]
+      summary: Get my order by ID
+      security:
+        - cookieSession: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /orders/{orderId}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/orderId'
+    post:
+      tags: [Orders]
+      summary: Request order cancellation (if eligible)
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ---------- PAYMENTS ----------
+  /payments/intents:
+    post:
+      tags: [Payments]
+      summary: Create a payment intent for an order
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id, provider]
+              properties:
+                order_id: { type: string, format: uuid }
+                provider: { type: string, enum: [stripe, cod] }
+                return_url: { type: string, format: uri }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentIntent' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /payments/intents/{intentId}:
+    parameters:
+      - $ref: '#/components/parameters/paymentIntentId'
+    get:
+      tags: [Payments]
+      summary: Retrieve payment intent
+      security:
+        - cookieSession: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentIntent' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /payments/intents/{intentId}/confirm:
+    parameters:
+      - $ref: '#/components/parameters/paymentIntentId'
+    post:
+      tags: [Payments]
+      summary: Confirm a payment intent (if provider requires server confirm)
+      security:
+        - cookieSession: []
+        - csrfHeader: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentIntent' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  # ---------- WEBHOOKS ----------
+  /webhooks/payments:
+    post:
+      tags: [Webhooks]
+      summary: Payment provider webhook endpoint
+      security: []   # validated by provider signature instead of session/CSRF
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEvent' }
+      responses:
+        '200': { description: OK (acknowledged) }
+        '400': { $ref: '#/components/responses/BadRequest' }
