@@ -2,6 +2,7 @@
 import HeaderOne from "@/components/header/HeaderOne";
 import ShortService from "@/components/service/ShortService";
 import CartMain from "./CartMain";
+import WishlistMain from "./WishlistMain";
 import FooterOne from "@/components/footer/FooterOne";
 
 
@@ -19,7 +20,7 @@ export default function Home() {
                                     <a href="index.html">Home</a>
                                     <i className="fa-regular fa-chevron-right" />
                                     <a className="current" href="index.html">
-                                        My Cart
+                                        My WishList
                                     </a>
                                 </div>
                             </div>
@@ -34,7 +35,8 @@ export default function Home() {
             </>
 
 
-            <CartMain />
+            {/* <CartMain /> */}
+            <WishlistMain />
             {/* <ShortService /> */}
             <FooterOne />
         </div>

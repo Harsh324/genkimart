@@ -96,10 +96,17 @@ export async function getCategories() {
 }
 
 export async function getFeaturedProducts() {
-  if (!API_BASE) return [] as import("@/types/content").ProductItem[];
-  const url = `${API_BASE}/products/featured/`;
-  const res = await fetch(url, { next: { revalidate: 120 } });
-  return safeJson<import("@/types/content").ProductItem[]>(res);
+  // if (!API_BASE) return [] as import("@/types/content").ProductItem[];
+  // const url = `${API_BASE}/products/featured/`;
+  // const res = await fetch(url, { next: { revalidate: 120 } });
+  // return safeJson<import("@/types/content").ProductItem[]>(res);
+
+  const url = API_BASE ? `${API_BASE}/products//featured/` : "";
+  const init = { next: { revalidate: 120 } as any };
+
+  return API_BASE
+    ? fetchArrayOr<import("@/types/content").ProductItem>(url, init, ProductsFallback as any)
+    : (ProductsFallback as any);
 }
 
 export async function getProducts() {

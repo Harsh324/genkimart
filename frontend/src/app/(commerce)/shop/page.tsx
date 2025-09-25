@@ -7,6 +7,7 @@ import FooterOne from "@/components/footer/FooterOne";
 import { useSearchParams } from "next/navigation";
 import { getProducts, getCategories, getBrands } from "@/lib/api";
 import type { ProductItem, CategoryItem, BrandItem } from "@/types/content";
+import WeeklyBestSellingMain from "@/components/product-main/WeeklyBestSellingMain";
 
 function ShopContent() {
     const searchParams = useSearchParams();
@@ -218,7 +219,8 @@ function ShopContent() {
                                         filteredProducts.map((post: ProductItem, index: number) => (
                                             <div key={post.slug ?? index} className="col-lg-20 col-lg-4 col-md-6 col-sm-6 col-12">
                                                 <div className="single-shopping-card-one">
-                                                    <ShopMain product={post} />
+                                                    {/* <ShopMain product={post} /> */}
+                                                    <WeeklyBestSellingMain product={post} />
                                                 </div>
                                             </div>
                                         ))

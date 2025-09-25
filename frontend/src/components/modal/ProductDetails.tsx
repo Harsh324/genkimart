@@ -1,25 +1,20 @@
 'use client';
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import { useCart } from "@/components/header/CartContext";
-import { toast } from "react-toastify";
 import type { ProductItem } from "@/types/content";
 
-// ---- helpers ----
 type NumLike = string | number | undefined;
+
+const yen = new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' });
 const toNumber = (n: NumLike) => {
-    const v = typeof n === "string" ? parseFloat(n) : n;
+    const v = typeof n === 'string' ? parseFloat(n) : n;
     return Number.isFinite(v as number) ? (v as number) : undefined;
 };
-const toFixedCurrency = (n: number | undefined) =>
-    typeof n !== "number" || Number.isNaN(n) ? "" : `$${n.toFixed(2)}`;
-
-const deriveDiscountPercent = (compareAt: NumLike, price: NumLike) => {
-    const oldP = toNumber(compareAt);
-    const newP = toNumber(price);
-    if (!oldP || !newP || oldP <= 0 || newP >= oldP) return undefined;
-    return Math.round(((oldP - newP) / oldP) * 100);
+const formatPrice = (n: NumLike) => {
+    const num = toNumber(n);
+    return num === undefined ? '' : yen.format(num);
 };
 
 // Extend your ProductItem with a few optional UI-only fields
@@ -37,23 +32,10 @@ type Props = {
 
 const ProductDetails: React.FC<Props> = ({ show, handleClose, product }) => {
     if (!product) return undefined;
-    // Resolve the image path (works if caller passed relative filenames)
-    const imgSrc =
-        product.image?.startsWith("http") || product.image?.startsWith("/")
-        ? product.image
-        : `/assets/images/grocery/${product.image ?? ""}`;
-    
-    const priceNum = toNumber(product.price) ?? 0;
-    const compareNum = toNumber(product.compareAtPrice);
-
-    const computedDiscount = useMemo(
-        () => product.discountPercent ?? deriveDiscountPercent(compareNum, priceNum),
-        [product]
-    );
 
     const thumbs = product.gallery?.length
         ? product.gallery
-        : [imgSrc, imgSrc, imgSrc];
+        : [product.image, product.image, product.image];
 
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<number>(0);
@@ -62,14 +44,10 @@ const ProductDetails: React.FC<Props> = ({ show, handleClose, product }) => {
     const increaseQuantity = () => setQuantity((q) => q + 1);
     const decreaseQuantity = () => setQuantity((q) => (q > 1 ? q - 1 : 1));
 
-    const totalPrice = priceNum * quantity;
+    const totalPrice = product.price * quantity;
 
     const handleAdd = () => {
         addToCart({
-            id: product.id,
-            image: imgSrc,
-            title: product.title ?? "Default Product Title",
-            price: priceNum,
             quantity,
             active: true,
             product,
@@ -99,10 +77,10 @@ const ProductDetails: React.FC<Props> = ({ show, handleClose, product }) => {
                                     <div className="product-thumb zoom">
                                         {/* active image */}
                                         <img src={thumbs[activeTab]} alt="product-thumb" />
-                                        {computedDiscount !== undefined && (
+                                        {product.discountPercent !== undefined && (
                                             <div className="badge">
                                                 <span>
-                                                    {computedDiscount}% <br /> Off
+                                                    {product.discountPercent}% <br /> Off
                                                 </span>
                                                 <i className="fa-solid fa-bookmark" />
                                             </div>
@@ -137,10 +115,10 @@ const ProductDetails: React.FC<Props> = ({ show, handleClose, product }) => {
                                 </h2>
 
                                 <span className="product-price">
-                                    {compareNum !== undefined && (
-                                        <span className="old-price">{toFixedCurrency(compareNum)}</span>
+                                    {product.compareAtPrice !== undefined && (
+                                        <span className="old-price">{formatPrice(product.compareAtPrice)}</span>
                                     )}{" "}
-                                    {toFixedCurrency(totalPrice)}
+                                    {formatPrice(totalPrice)}
                                 </span>
 
                                 {product.unitLabel && (
