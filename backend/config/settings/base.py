@@ -2,6 +2,12 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from django.core.exceptions import ImproperlyConfigured
+import warnings
+
+# Silence only dj-rest-auth deprecation UserWarnings (e.g., AUTHENTICATION_METHOD → LOGIN_METHODS)
+warnings.filterwarnings("ignore", category=UserWarning, module=r"^dj_rest_auth(\.|$)")
+
+# TODO: Enable axes later in V2
 
 
 # ---------- env helpers (fail fast) ----------
@@ -61,7 +67,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "drf_spectacular",
-    "axes",
+    # "axes",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -88,7 +94,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "axes.middleware.AxesMiddleware",
+    # "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -129,7 +135,7 @@ DATABASES = {
 
 # ---------- auth/backends ----------
 AUTHENTICATION_BACKENDS = [
-    "axes.backends.AxesStandaloneBackend",
+    # "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -207,5 +213,12 @@ X_FRAME_OPTIONS = env_required("X_FRAME_OPTIONS")  # e.g. "DENY" or "SAMEORIGIN"
 # ---------- email (env decides backend) ----------
 EMAIL_BACKEND = env_required("EMAIL_BACKEND")
 DEFAULT_FROM_EMAIL = env_required("DEFAULT_FROM_EMAIL")
+
+# ---------- allauth (EMAIL-ONLY; no username fields) ----------
+ACCOUNT_LOGIN_METHODS = {"email"}  # {"email"} or {"username"} or both
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_UNIQUE_EMAIL = True
+# Email verification flow (still valid)
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
