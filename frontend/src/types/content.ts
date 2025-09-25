@@ -16,6 +16,7 @@ export type CategoryItem = {
 };
 
 export type ProductItem = {
+	id: string | number
 	slug: string;            // unique identifier used for product page URLs
 	image: string;           // image path or absolute URL
 	title?: string;
