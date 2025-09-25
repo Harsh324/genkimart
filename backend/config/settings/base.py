@@ -3,6 +3,8 @@ from pathlib import Path
 from datetime import timedelta
 from django.core.exceptions import ImproperlyConfigured
 
+# TODO: Enable axes later in V2
+
 
 # ---------- env helpers (fail fast) ----------
 def env_required(name: str) -> str:
@@ -61,7 +63,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "drf_spectacular",
-    "axes",
+    # "axes",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -88,7 +90,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "axes.middleware.AxesMiddleware",
+    # "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -129,7 +131,7 @@ DATABASES = {
 
 # ---------- auth/backends ----------
 AUTHENTICATION_BACKENDS = [
-    "axes.backends.AxesStandaloneBackend",
+    # "axes.backends.AxesStandaloneBackend",
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
@@ -208,4 +210,11 @@ X_FRAME_OPTIONS = env_required("X_FRAME_OPTIONS")  # e.g. "DENY" or "SAMEORIGIN"
 EMAIL_BACKEND = env_required("EMAIL_BACKEND")
 DEFAULT_FROM_EMAIL = env_required("DEFAULT_FROM_EMAIL")
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = (
+    "mandatory"  # “mandatory” means the user cannot log in until email is verified
+)
+ACCOUNT_CONFIRM_EMAIL_ON_GET = (
+    True  # or False, depending on whether you want confirmation via GET
+)
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
