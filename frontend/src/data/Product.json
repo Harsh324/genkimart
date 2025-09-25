@@ -1,7 +1,8 @@
 [
   {
+    "id": 1,
     "slug": "sweets-treats-haldiram-profitable-business-makes-your-profit-best-solution",
-    "image": "15.jpg",
+    "image": "/assets/images/grocery/15.jpg",
     "title": "Profitable business makes your profit Best Solution",
     "price": 36.0,
     "compareAtPrice": 40.0,
@@ -13,8 +14,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 2,
     "slug": "dairy-eggs-ashirwaad-details-profitable-business-makes-your-profit",
-    "image": "02.jpg",
+    "image": "/assets/images/grocery/02.jpg",
     "title": "Details Profitable business makes your profit",
     "price": 29.0,
     "compareAtPrice": 35.0,
@@ -26,8 +28,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 3,
     "slug": "snacks-ashirwaad-one-profitable-business-makes-your-profit",
-    "image": "21.jpg",
+    "image": "/assets/images/grocery/21.jpg",
     "title": "One Profitable business makes your profit",
     "price": 25.0,
     "compareAtPrice": 29.0,
@@ -39,8 +42,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 4,
     "slug": "rice-grains-gits-me-profitable-business-makes-your-profit",
-    "image": "15.jpg",
+    "image": "/assets/images/grocery/15.jpg",
     "title": "Me Profitable business makes your profit",
     "price": 78.0,
     "compareAtPrice": 78.0,
@@ -52,8 +56,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 5,
     "slug": "bakery-gits-details-business-makes-your-profit",
-    "image": "18.jpg",
+    "image": "/assets/images/grocery/18.jpg",
     "title": "Details business makes your profit",
     "price": 90.0,
     "compareAtPrice": 92.0,
@@ -65,8 +70,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 6,
     "slug": "personal-care-haldiram-firebase-business-makes-your-profit",
-    "image": "03.jpg",
+    "image": "/assets/images/grocery/03.jpg",
     "title": "Firebase business makes your profit",
     "price": 50.0,
     "compareAtPrice": 52.0,
@@ -78,8 +84,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 7,
     "slug": "meat-seafood-ashirwaad-netlyfy-business-makes-your-profit",
-    "image": "21.jpg",
+    "image": "/assets/images/grocery/21.jpg",
     "title": "Netlyfy business makes your profit",
     "price": 19.0,
     "compareAtPrice": 41.0,
@@ -91,8 +98,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 8,
     "slug": "dairy-eggs-ambika-profitable-business-makes-your-profit",
-    "image": "23.jpg",
+    "image": "/assets/images/grocery/23.jpg",
     "title": "Profitable business makes your profit",
     "price": 30.0,
     "compareAtPrice": 36.0,
@@ -104,8 +112,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 9,
     "slug": "sweets-treats-gits-valuable-business-makes-your-profit",
-    "image": "06.png",
+    "image": "/assets/images/grocery/06.png",
     "title": "Valuable business makes your profit",
     "price": 16.0,
     "compareAtPrice": 40.0,
@@ -117,8 +126,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 10,
     "slug": "beverages-ambika-system-business-makes-your-profit",
-    "image": "01.jpg",
+    "image": "/assets/images/grocery/01.jpg",
     "title": "System business makes your profit",
     "price": 15.0,
     "compareAtPrice": 19.0,
@@ -130,8 +140,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 11,
     "slug": "bakery-haldiram-profitables-business-makes-your-profit",
-    "image": "25.jpg",
+    "image": "/assets/images/grocery/25.jpg",
     "title": "Profitables business makes your profit",
     "price": 12.0,
     "compareAtPrice": 12.0,
@@ -143,8 +154,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 12,
     "slug": "sweets-treats-ambika-content-business-makes-your-profit",
-    "image": "01.jpg",
+    "image": "/assets/images/grocery/01.jpg",
     "title": "Content business makes your profit",
     "price": 79.0,
     "compareAtPrice": 88.0,
@@ -156,8 +168,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 13,
     "slug": "spices-masalas-gits-dalivaring-business-makes-your-profit",
-    "image": "02.png",
+    "image": "/assets/images/grocery/02.png",
     "title": "Dalivaring business makes your profit",
     "price": 63.0,
     "compareAtPrice": 65.0,
@@ -169,8 +182,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 14,
     "slug": "pantry-staples-haldiram-staning-business-makes-your-profit",
-    "image": "16.jpg",
+    "image": "/assets/images/grocery/16.jpg",
     "title": "Staning business makes your profit",
     "price": 86.0,
     "compareAtPrice": 100.0,
@@ -182,8 +196,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 15,
     "slug": "frozen-foods-ambika-best-business-makes-your-profit",
-    "image": "03.png",
+    "image": "/assets/images/grocery/03.png",
     "title": "Best business makes your profit",
     "price": 18.0,
     "compareAtPrice": 40.0,
@@ -195,8 +210,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 16,
     "slug": "personal-care-gits-cooler-business-makes-your-profit",
-    "image": "04.png",
+    "image": "/assets/images/grocery/04.png",
     "title": "cooler business makes your profit",
     "price": 18.0,
     "compareAtPrice": 40.0,
@@ -208,8 +224,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 17,
     "slug": "household-gits-best-one-profitable-business-makes-your-profit",
-    "image": "05.jpg",
+    "image": "/assets/images/grocery/05.jpg",
     "title": "Best-one Profitable business makes your profit",
     "price": 99.0,
     "compareAtPrice": 100.0,
@@ -221,8 +238,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 18,
     "slug": "bakery-amul-super-fresh-meat",
-    "image": "26.jpg",
+    "image": "/assets/images/grocery/26.jpg",
     "title": "Super Fresh Meat",
     "price": 22.0,
     "compareAtPrice": 40.0,
@@ -234,8 +252,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 19,
     "slug": "pantry-staples-haldiram-super-fresh-mutt",
-    "image": "18.jpg",
+    "image": "/assets/images/grocery/18.jpg",
     "title": "Super Fresh mutt",
     "price": 23.0,
     "compareAtPrice": 30.0,
@@ -247,8 +266,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 20,
     "slug": "dairy-eggs-haldiram-original-fresh-frut",
-    "image": "04.jpg",
+    "image": "/assets/images/grocery/04.jpg",
     "title": "Original Fresh frut",
     "price": 24.0,
     "compareAtPrice": 40.0,
@@ -260,8 +280,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 21,
     "slug": "beverages-gits-organic-fresh-frut",
-    "image": "05.jpg",
+    "image": "/assets/images/grocery/05.jpg",
     "title": "Organic Fresh frut",
     "price": 25.0,
     "compareAtPrice": 40.0,
@@ -273,8 +294,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 22,
     "slug": "sweets-treats-gits-lite-fresh-frut",
-    "image": "03.jpg",
+    "image": "/assets/images/grocery/03.jpg",
     "title": "Lite Fresh frut",
     "price": 36.0,
     "compareAtPrice": 50.0,
@@ -286,8 +308,9 @@
     "description": "Collaboratively pontificate bleeding edge resources with inexpensive methodologies globally initiate multidisciplinary compatible architectures pidiously repurpose leading edge growth strategies with just in time web readiness communicate timely meta services."
   },
   {
+    "id": 23,
     "slug": "snacks-ashirwaad-smart-fresh-frut",
-    "image": "01.png",
+    "image": "/assets/images/grocery/01.png",
     "title": "Smart Fresh frut",
     "price": 26.0,
     "compareAtPrice": 40.0,

@@ -8,14 +8,12 @@ import type { ProductItem } from "@/types/content";
 import "swiper/css";
 import "swiper/css/navigation";
 
-import Fallback from "@/data/Product.json"; // keeps your current JSON as fallback
-
-type Props = {
+type FeaturedProductProps = {
     products?: ProductItem[];
     loading?: boolean;
 };
 
-function FeatureProduct({ products = [], loading = false }: Props) {
+function FeatureProduct({ products = [], loading = false }: FeaturedProductProps) {
     useEffect(() => {
         const handle = (e: Event) => {
             const button = e.currentTarget as HTMLElement;
@@ -42,11 +40,7 @@ function FeatureProduct({ products = [], loading = false }: Props) {
         return () => buttons.forEach((b) => b.removeEventListener("click", handle));
     }, []);
 
-    // ----- data: use API products or fallback JSON -----
-    const items: ProductItem[] =
-        products.length > 0
-        ? products
-        : (Fallback as ProductItem[]).filter(Boolean);
+    const items: ProductItem[] = products
 
     // ----- scoped navigation (prevents cross-slider conflicts) -----
     const prevRef = useRef<HTMLButtonElement | null>(null);
@@ -59,7 +53,7 @@ function FeatureProduct({ products = [], loading = false }: Props) {
                 <div className="container">
                     <div className="title-area-between">
                         <div className="h-8 w-40 bg-gray-300 animate-pulse rounded" />
-                            <div className="flex gap-3">
+                        <div className="flex gap-3">
                             <div className="h-8 w-8 bg-gray-300 animate-pulse rounded-full" />
                             <div className="h-8 w-8 bg-gray-300 animate-pulse rounded-full" />
                         </div>
@@ -81,69 +75,68 @@ function FeatureProduct({ products = [], loading = false }: Props) {
 
     return (
         <>
-        {/* rts grocery feature area start */}
-        <div className="rts-grocery-feature-area rts-section-gapBottom">
-            <div className="container">
-                <div className="row">
-                    <div className="col-lg-12">
-                        <div className="title-area-between">
-                            <h2 className="title-left">Featured Items</h2>
-                            <div className="next-prev-swiper-wrapper">
-                                <button ref={prevRef} className="swiper-button-prev">
-                                    <i className="fa-regular fa-chevron-left" />
-                                </button>
-                                <button ref={nextRef} className="swiper-button-next">
-                                    <i className="fa-regular fa-chevron-right" />
-                                </button>
+            {/* rts grocery feature area start */}
+            <div className="rts-grocery-feature-area rts-section-gapBottom">
+                <div className="container">
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div className="title-area-between">
+                                <h2 className="title-left">Featured Items</h2>
+                                <div className="next-prev-swiper-wrapper">
+                                    <button ref={prevRef} className="swiper-button-prev">
+                                        <i className="fa-regular fa-chevron-left" />
+                                    </button>
+                                    <button ref={nextRef} className="swiper-button-next">
+                                        <i className="fa-regular fa-chevron-right" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Slider */}
+                <div className="container">
+                    <div className="row">
+                        <div className="col-lg-12">
+                            <div className="category-area-main-wrapper-one">
+                                <Swiper
+                                    modules={[Navigation, Autoplay]}
+                                    autoplay={{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }}
+                                    loop={items.length > 6}
+                                    onBeforeInit={(swiper) => {
+                                        // @ts-expect-error – Swiper types allow updates at runtime
+                                        swiper.params.navigation.prevEl = prevRef.current;
+                                        // @ts-expect-error
+                                        swiper.params.navigation.nextEl = nextRef.current;
+                                    }}
+                                    navigation={{
+                                        prevEl: prevRef.current,
+                                        nextEl: nextRef.current,
+                                    }}
+                                    breakpoints={{
+                                        0: { slidesPerView: 1, spaceBetween: 30 },
+                                        320: { slidesPerView: 2, spaceBetween: 30 },
+                                        480: { slidesPerView: 3, spaceBetween: 30 },
+                                        640: { slidesPerView: 3, spaceBetween: 30 },
+                                        840: { slidesPerView: 4, spaceBetween: 30 },
+                                        1140: { slidesPerView: 6, spaceBetween: 30 },
+                                    }}
+                                    className="mySwiper-feature-products"
+                                >
+                                    {items.map((p) => (
+                                        <SwiperSlide key={p.slug}>
+                                            <div className="single-shopping-card-one">
+                                                <WeeklyBestSellingMain product={p} />
+                                            </div>
+                                        </SwiperSlide>
+                                    ))}
+                                </Swiper>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Slider */}
-            <div className="container">
-                <div className="row">
-                    <div className="col-lg-12">
-                        <div className="category-area-main-wrapper-one">
-                            <Swiper
-                                modules={[Navigation, Autoplay]}
-                                autoplay={{ delay: 3000, disableOnInteraction: false, pauseOnMouseEnter: true }}
-                                loop={items.length > 6}
-                                onBeforeInit={(swiper) => {
-                                    // @ts-expect-error – Swiper types allow updates at runtime
-                                    swiper.params.navigation.prevEl = prevRef.current;
-                                    // @ts-expect-error
-                                    swiper.params.navigation.nextEl = nextRef.current;
-                                }}
-                                navigation={{
-                                    prevEl: prevRef.current,
-                                    nextEl: nextRef.current,
-                                }}
-                                breakpoints={{
-                                    0: { slidesPerView: 1, spaceBetween: 30 },
-                                    320: { slidesPerView: 2, spaceBetween: 30 },
-                                    480: { slidesPerView: 3, spaceBetween: 30 },
-                                    640: { slidesPerView: 3, spaceBetween: 30 },
-                                    840: { slidesPerView: 4, spaceBetween: 30 },
-                                    1140: { slidesPerView: 6, spaceBetween: 30 },
-                                }}
-                                className="mySwiper-feature-products"
-                            >
-                                {items.map((p) => (
-                                    <SwiperSlide key={p.slug}>
-                                        <div className="single-shopping-card-one">
-                                            <WeeklyBestSellingMain product={p} />
-                                        </div>
-                                    </SwiperSlide>
-                                ))}
-                            </Swiper>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {/* rts grocery feature area end */}
         </>
     );
 }

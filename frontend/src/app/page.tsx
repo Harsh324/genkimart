@@ -1,10 +1,9 @@
 import HeaderOne from "@/components/header/HeaderOne";
 import FeatureProduct from "@/components/product/FeatureProduct";
 import WeeklyBestSelling from "@/components/product/WeeklyBestSelling";
-import TrandingProduct from "@/components/product/TrandingProduct";
 import FooterOne from "@/components/footer/FooterOne";
 import BannerMain from "@/components/banner/BannerMain";
-import { 
+import {
 	getBanners,
 	getCategories,
 	getFeaturedProducts,
@@ -41,7 +40,7 @@ export default async function Home() {
 			<Suspense fallback={<BannerMain loading />}>
 				<BannerSection />
 			</Suspense>
-			
+
 			<Suspense fallback={<FeatureProduct loading />}>
 				<FeaturedSection />
 			</Suspense>
