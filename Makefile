@@ -5,7 +5,7 @@ OVERRIDE_FILE = deploy/override.yml
 COMPOSE_OVERRIDE_ARG = $(if $(wildcard $(OVERRIDE_FILE)),-f $(OVERRIDE_FILE),)
 
 up:
-	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) up --build
+	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) up -d
 
 down:
 	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) down
