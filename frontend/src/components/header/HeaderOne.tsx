@@ -8,6 +8,7 @@ import Sidebar from './Sidebar';
 import BackToTop from "@/components/common/BackToTop";
 import { useCompare } from '@/components/header/CompareContext';
 import { useRouter } from 'next/navigation';
+import { useAuth } from "@/components/auth/AuthProvider";
 
 function HeaderOne() {
     const { compareItems } = useCompare();
@@ -70,6 +71,8 @@ function HeaderOne() {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const { user, logout, loading } = useAuth();
 
     const allSuggestions = [
         "Profitable business makes your profit Best Solution",
@@ -215,14 +218,45 @@ function HeaderOne() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <div className="accont-wishlist-cart-area-header">
+                                    {/* <div className="accont-wishlist-cart-area-header">
                                         <a href="/profile" className="btn-border-only account">
                                             <i className="fa-light fa-user" />
                                             <span>Account</span>
                                         </a>
                                         <WishList />
                                         <Cart />
+                                    </div> */}
+                                    <div className="accont-wishlist-cart-area-header">
+                                        {user ? (
+                                            <>
+                                            <a href="/profile" className="btn-border-only account">
+                                                <i className="fa-light fa-user" />
+                                                <span>{"My Account"}</span>
+                                            </a>
+                                            {/* <button
+                                                onClick={logout}
+                                                className="btn-border-only account"
+                                                style={{ background: "none", border: "none", cursor: "pointer" }}
+                                            >
+                                                <i className="fa-light fa-sign-out" /> Logout
+                                            </button> */}
+                                            </>
+                                        ) : (
+                                            <>
+                                            <a href="/login" className="btn-border-only account">
+                                                <i className="fa-light fa-user" />
+                                                <span>Login</span>
+                                            </a>
+                                            <a href="/register" className="btn-border-only account">
+                                                <i className="fa-light fa-user-plus" />
+                                                <span>Register</span>
+                                            </a>
+                                            </>
+                                        )}
+                                        <WishList />
+                                        <Cart />
                                     </div>
+
                                 </div>
                             </div>
                         </div>

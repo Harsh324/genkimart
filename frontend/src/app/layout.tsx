@@ -7,6 +7,7 @@ import "../../public/assets/css/style.css";
 
 import { CartProvider } from "../components/header/CartContext";
 import { WishlistProvider } from "../components/header/WishlistContext";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 import "react-toastify/dist/ReactToastify.css";
 import ClientToaster from "@/components/common/ClientToaster";
@@ -45,7 +46,10 @@ export default function RootLayout({
 				{/* <CompareProvider> */}
 				<WishlistProvider>
 					<CartProvider>
-						{children}
+						<AuthProvider>
+							{children}
+						</AuthProvider>\
+						
 						<ClientToaster />
 					</CartProvider>
 				</WishlistProvider>

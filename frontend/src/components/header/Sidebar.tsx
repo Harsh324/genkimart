@@ -2,6 +2,7 @@
 import CategoryMenu from './CategoryMenu';
 import MobileMenu from './MobileMenu';
 import { useState } from 'react';
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const Sidebar = () => {
 
@@ -25,7 +26,8 @@ const Sidebar = () => {
             sidebar.classList.remove('show');
         }
     };
-
+    
+    const { user, logout } = useAuth();
 
 
     return (
@@ -40,42 +42,9 @@ const Sidebar = () => {
                         <i className="fa-light fa-magnifying-glass" />
                     </button>
                 </form>
-                <div className="mobile-menu-nav-area tab-nav-btn mt--20">
-                    {/* <nav>
-                        <div className="nav nav-tabs" id="nav-tab" role="tablist">
-                            <button
-                               onClick={() => setActiveTab('tab1')}
-                                                className={`nav-link ${activeTab === 'tab1' ? 'active' : ''}`}>
-                                Menu
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('tab2')}
-                                                className={`nav-link ${activeTab === 'tab2' ? 'active' : ''}`}>
-                                Category
-                            </button>
-                        </div>
-                    </nav> */}
-                    <div className="tab-content" id="nav-tabContent">
-                        {activeTab === 'tab1' &&
-                        <div>
-                            {/* mobile menu area start */}
-                            <div className="mobile-menu-main">
-                                <MobileMenu/>
-                            </div>
-                            {/* mobile menu area end */}
-                        </div>}
-                        {/* {activeTab === 'tab2' &&
-                        <div>
-                            <div className="category-btn category-hover-header menu-category">
-                                <CategoryMenu/>
-                            </div>
-                        </div>
-                        } */}
-                    </div>
-                </div>
                 {/* button area wrapper start */}
                 <div className="button-area-main-wrapper-menuy-sidebar mt--50">
-                    <div className="contact-area">
+                    {/* <div className="contact-area">
                         <div className="phone">
                             <i className="fa-light fa-headset" />
                             <a href="#">02345697871</a>
@@ -84,15 +53,21 @@ const Sidebar = () => {
                             <i className="fa-light fa-envelope" />
                             <a href="#">02345697871</a>
                         </div>
-                    </div>
+                    </div> */}
                     <div className="buton-area-bottom">
-                        <a href="/login" className="rts-btn btn-primary">
-                            Sign In
-                        </a>
-                        <a href="/register" className="rts-btn btn-primary">
-                            Sign Up
-                        </a>
-                    </div>
+                        {user ? (
+                            <>
+                            <a href="/profile" className="rts-btn btn-primary">Account</a>
+                            <button onClick={logout} className="rts-btn btn-primary" style={{ border: "none" }}>Logout</button>
+                            </>
+                        ) : (
+                            <>
+                            <a href="/login" className="rts-btn btn-primary">Sign In</a>
+                            <a href="/register" className="rts-btn btn-primary">Sign Up</a>
+                            </>
+                        )}
+                        </div>
+
                 </div>
                 {/* button area wrapper end */}
             </div>
