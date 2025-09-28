@@ -1,0 +1,17 @@
+import api from "./apiClient";
+export async function getCart() {
+  const { data } = await api.get("/cart/");
+  return data;
+}
+export async function addToCart(payload: { product_id: number | string; qty: number }) {
+  const { data } = await api.post("/cart/items/", payload);
+  return data;
+}
+export async function updateCartItem(id: string | number, payload: { qty: number }) {
+  const { data } = await api.patch(`/cart/items/${id}/`, payload);
+  return data;
+}
+export async function removeCartItem(id: string | number) {
+  const { data } = await api.delete(`/cart/items/${id}/`);
+  return data;
+}

@@ -9,6 +9,8 @@ import {
 	getFeaturedProducts,
 	getWeeklyBestSellingTabs,
 } from "@/lib/api";
+
+// import { getFeaturedProducts } from "@/lib/shopApi";
 import { Suspense } from "react";
 
 // --- Banner (server) ---

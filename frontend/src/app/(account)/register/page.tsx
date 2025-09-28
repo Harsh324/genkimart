@@ -5,19 +5,29 @@ import FooterOne from "@/components/footer/FooterOne";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function RegisterPage() {
-    const { register, loading } = useAuth();
+    const { user, register, loading } = useAuth();
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password1, setPassword1] = useState("");
     const [password2, setPassword2] = useState("");
     const router = useRouter();
 
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace("/profile");
+        }
+    }, [loading, user, router]);
+
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (user) {               // safety
+            router.replace("/profile");
+            return;
+        }
         await register({ email, username, password1, password2 });
-        // Guide the user to verify their email
         router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     };
 

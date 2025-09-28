@@ -5,17 +5,28 @@ import FooterOne from "@/components/footer/FooterOne";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
-    const { login, loading } = useAuth();
+    const { user, login, loading } = useAuth();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const router = useRouter();
     const sp = useSearchParams();
-    const next = sp.get("next") || "/";
+    const next = sp.get("next") || "/profile";
+
+    useEffect(() => {
+        if (!loading && user) {
+            router.replace(next);
+        }
+    }, [loading, user, next, router]);
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (user) {               // <-- extra safety
+            router.replace(next);
+            return;
+        }
         await login({ email, password });
         router.replace(next);
     };

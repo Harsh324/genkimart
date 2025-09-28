@@ -231,7 +231,7 @@ function HeaderOne() {
                                             <>
                                             <a href="/profile" className="btn-border-only account">
                                                 <i className="fa-light fa-user" />
-                                                <span>{"My Account"}</span>
+                                                <span>{"Account"}</span>
                                             </a>
                                             {/* <button
                                                 onClick={logout}

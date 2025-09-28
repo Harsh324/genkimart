@@ -1,5 +1,4 @@
 "use client";
-
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getUser, login as apiLogin, logout as apiLogout, register as apiRegister, refreshToken } from "@/lib/authApi";
 import { setAccessToken } from "@/lib/apiClient";
@@ -11,7 +10,7 @@ type AuthContextType = {
   loading: boolean;
   login: (p: { email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
-  register: (p: { email: string; password1: string; password2: string }) => Promise<void>;
+  register: (p: { email: string; username: string; password1: string; password2: string }) => Promise<void>;
   refetchUser: () => Promise<void>;
 };
 
@@ -21,22 +20,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // boot
   useEffect(() => {
-    const boot = async () => {
+    (async () => {
       try {
-        const stored = localStorage.getItem("access");
-        if (stored) setAccessToken(stored);
-        else await refreshToken();
+        const stored = typeof window !== "undefined" ? localStorage.getItem("access") : null;
+        if (stored) setAccessToken(stored); // bearer mode
+        await refreshToken(); // no-op for bearer; primes header; cookie mode: nothing to set
         const u = await getUser();
         setUser(u);
       } catch {
         setUser(null);
+        setAccessToken(null);
       } finally {
         setLoading(false);
       }
-    };
-    boot();
+    })();
   }, []);
 
   const login = async (p: { email: string; password: string }) => {
@@ -47,7 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(u);
       toast.success("Logged in");
     } catch (e: any) {
-      toast.error(e?.response?.data?.detail || "Login failed");
+      const msg = e?.response?.data?.detail || e?.response?.data || "Login failed";
+      toast.error(typeof msg === "string" ? msg : "Login failed");
       throw e;
     } finally {
       setLoading(false);
@@ -65,7 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (p: { email: string; password1: string; password2: string }) => {
+  const register = async (p: { email: string; username: string; password1: string; password2: string }) => {
     setLoading(true);
     try {
       await apiRegister(p);
