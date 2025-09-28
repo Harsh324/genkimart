@@ -9,6 +9,7 @@ from apps.common.models import TimeStampedModel
 class Category(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=160, unique=True)
+    image = models.ImageField(upload_to="categories/", blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -18,6 +19,8 @@ class Product(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
+
     category = models.ForeignKey(
         "catalog.Category",
         on_delete=models.PROTECT,
