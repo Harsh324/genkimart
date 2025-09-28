@@ -14,8 +14,8 @@ from apps.catalog.models import (
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ["id", "name", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "name", "image"]
+        read_only_fields = ["id", "created_at"]
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -81,7 +81,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     # related / computed fields
     category_name = serializers.CharField(source="category.name", read_only=True)
-    images = ProductImageSerializer(many=True, read_only=True)
+    # images = ProductImageSerializer(many=True, read_only=True)
     attributes = ProductAttributeSerializer(many=True, read_only=True)
 
     # expose model property
@@ -93,6 +93,7 @@ class ProductSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "image",
             "category",
             "category_name",
             "is_active",
@@ -110,3 +111,21 @@ class ProductSerializer(serializers.ModelSerializer):
             "updated_at",
             "in_stock",
         ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        return {
+            "id": rep["id"],
+            "slug": rep.get("slug"),
+            "image": (rep.get("image")),
+            "title": rep.get("title"),
+            "price": rep.get("price"),
+            "category": (
+                instance.category.name
+                if hasattr(instance, "category") and instance.category
+                else None
+            ),
+            "sku": rep.get("sku"),
+            "description": rep.get("description"),
+        }

@@ -4,11 +4,13 @@ from django.db.models import Q, F
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.common.models import TimeStampedModel
+from django.utils.text import slugify
 
 
 class Category(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=160, unique=True)
+    image = models.ImageField(upload_to="categories/", blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -18,6 +20,8 @@ class Product(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
+
     category = models.ForeignKey(
         "catalog.Category",
         on_delete=models.PROTECT,
@@ -76,6 +80,16 @@ class Product(TimeStampedModel):
             stock_quantity=F("stock_quantity") + qty
         )
         self.refresh_from_db(fields=["stock_quantity"])
+
+    @property
+    def sku(self) -> str:
+        # Example: "PROD-" + first 8 chars of UUID
+        return f"PROD-{str(self.id)[:8]}"
+
+    @property
+    def slug(self) -> str:
+        # Use Django's slugify utility
+        return slugify(self.title)
 
 
 class ProductImage(TimeStampedModel):

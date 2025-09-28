@@ -1,6 +1,7 @@
 # apps/catalog/views.py
 from rest_framework import viewsets, permissions, filters as drf_filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from apps.catalog.models import (
     Category,
@@ -33,6 +34,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
     ordering_fields = ["name" "created_at"]
     ordering = ["name"]
+    parser_classes = [MultiPartParser, FormParser]
 
 
 class ProductViewSet(viewsets.ModelViewSet):

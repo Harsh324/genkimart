@@ -17,6 +17,7 @@ dependencies = [
     "requests>=2.32.5",
     "psycopg[binary]>=3.2",
     "gunicorn>=23.0.0",
+    "pillow>=11.3.0",
 ]
 
 [dependency-groups]
