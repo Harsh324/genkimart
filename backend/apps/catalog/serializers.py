@@ -111,3 +111,21 @@ class ProductSerializer(serializers.ModelSerializer):
             "updated_at",
             "in_stock",
         ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+
+        return {
+            "id": rep["id"],
+            "slug": rep.get("slug"),
+            "image": (rep.get("image")),
+            "title": rep.get("title"),
+            "price": rep.get("price"),
+            "category": (
+                instance.category.name
+                if hasattr(instance, "category") and instance.category
+                else None
+            ),
+            "sku": rep.get("sku"),
+            "description": rep.get("description"),
+        }

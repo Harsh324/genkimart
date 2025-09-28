@@ -4,6 +4,7 @@ from django.db.models import Q, F
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from apps.common.models import TimeStampedModel
+from django.utils.text import slugify
 
 
 class Category(TimeStampedModel):
@@ -79,6 +80,16 @@ class Product(TimeStampedModel):
             stock_quantity=F("stock_quantity") + qty
         )
         self.refresh_from_db(fields=["stock_quantity"])
+
+    @property
+    def sku(self) -> str:
+        # Example: "PROD-" + first 8 chars of UUID
+        return f"PROD-{str(self.id)[:8]}"
+
+    @property
+    def slug(self) -> str:
+        # Use Django's slugify utility
+        return slugify(self.title)
 
 
 class ProductImage(TimeStampedModel):
