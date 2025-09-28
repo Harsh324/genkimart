@@ -18,6 +18,13 @@ class CartItemSerializer(serializers.ModelSerializer):
         data["line_total"] = obj.quantity * obj.product.price
         return data
 
+    def to_internal_value(self, data):
+        product_data = data.get("product")
+        if isinstance(product_data, dict) and "id" in product_data:
+            data["product"] = product_data["id"]
+
+        return super().to_internal_value(data)
+
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)

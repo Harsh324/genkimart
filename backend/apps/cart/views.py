@@ -24,14 +24,21 @@ class CartViewSet(viewsets.ViewSet):
     @transaction.atomic
     def create(self, request):
         cart = get_cart(request.user)
-        serializer = CartItemSerializer(data=request.data)
+        raw = request.data
+        items_payload = raw.get("items", raw) if isinstance(raw, dict) else raw
+        if not isinstance(items_payload, list):
+            items_payload = [items_payload]
+
+        serializer = CartItemSerializer(data=items_payload, many=True)
         serializer.is_valid(raise_exception=True)
 
-        product = serializer.validated_data["product"]
-        quantity = serializer.validated_data.get("quantity")
-
         try:
-            upsert_cart_item(cart, product, quantity)
+            for item in serializer.validated_data:
+                product = item["product"]  # already a Product instance
+                quantity = item.get(
+                    "quantity"
+                )  # None = increment by 1 (per your service)
+                upsert_cart_item(cart, product, quantity)
         except CartError as exc:
             return Response({"error": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
 
