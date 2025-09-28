@@ -140,6 +140,11 @@ function FooterOne() {
                                                 <i className="fa-brands fa-instagram" />
                                             </a>
                                         </li>
+                                        <li>
+                                            <a href="#">
+                                                <i className="fa-brands fa-tiktok" />
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                                 <div className="payment-access">

@@ -34,3 +34,7 @@ frontend-logs:
 
 frontend-rebuild:
 	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) up --build -d frontend
+
+frontend-shell:
+	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) \
+		exec frontend sh -lc 'if command -v bash >/dev/null 2>&1; then exec bash; else exec sh; fi'
