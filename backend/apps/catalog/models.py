@@ -21,6 +21,7 @@ class Product(TimeStampedModel):
     title = models.CharField(max_length=255, db_index=True)
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to="products/", blank=True, null=True)
+    brand = models.CharField(max_length=100, blank=True)
 
     category = models.ForeignKey(
         "catalog.Category",

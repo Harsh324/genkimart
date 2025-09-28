@@ -92,6 +92,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "brand",
             "description",
             "image",
             "category",
@@ -117,8 +118,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
         return {
             "id": rep["id"],
-            "slug": rep.get("slug"),
+            "slug": getattr(instance, "slug", None),
             "image": (rep.get("image")),
+            "brand": rep.get("brand"),
             "title": rep.get("title"),
             "price": rep.get("price"),
             "category": (
@@ -126,6 +128,6 @@ class ProductSerializer(serializers.ModelSerializer):
                 if hasattr(instance, "category") and instance.category
                 else None
             ),
-            "sku": rep.get("sku"),
+            "sku": getattr(instance, "sku", None),
             "description": rep.get("description"),
         }
