@@ -13,6 +13,9 @@ up:
 down:
 	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) down
 
+build:
+	docker compose --env-file $(DEV_ENV_FILE) -f $(COMPOSE_FILE) $(COMPOSE_OVERRIDE_ARG) build
+
 restart: down up
 
 db-shell:
