@@ -27,9 +27,16 @@ export type BrandItem = {
   href?: string;
 };
 
+// export type CategoryItem = {
+//   id: string | number;
+//   name: string;
+//   slug: string;
+//   parent?: string | number | null;
+// };
+
 export type CategoryItem = {
-  id: string | number;
-  name: string;
-  slug: string;
-  parent?: string | number | null;
+	id: string | number;
+	name: string;            // e.g., "Organic Vegetable"
+	imageUrl: string;        // e.g., "/assets/images/category/01.png"
+	href?: string;           // e.g., "/shop?category=veg"
 };
