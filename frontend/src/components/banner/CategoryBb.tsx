@@ -32,9 +32,13 @@ function CategoryBannerBottom({ categories = [], loading = false }: Props) {
             </div>
         );
     }
-    const items = categories.length 
-        ? categories 
-        : (Fallback as CategoryItem[]).filter(Boolean);
+
+    const items = (() => {
+        if (categories && Array.isArray((categories as any).results)) {
+            return (categories as any).results;
+        }
+        return (Fallback as CategoryItem[]).filter(Boolean);
+    })();
 
     return (
         <div className="rts-caregory-area-one">
@@ -60,7 +64,7 @@ function CategoryBannerBottom({ categories = [], loading = false }: Props) {
                             >
                                 {items.map((cat) => (
                                 <SwiperSlide key={cat.id}>
-                                    <Link href={cat.href || "/shop"} className="single-category-one">
+                                    <Link href={`/shop?categoryId=${cat.id}`} className="single-category-one">
                                     <Image
                                         src={cat.imageUrl}
                                         alt={cat.name}

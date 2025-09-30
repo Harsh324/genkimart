@@ -150,11 +150,11 @@ function HeaderOne() {
                                         <img src="/assets/images/logo/genkimart-clean.svg" alt="logo-main" className="logo" />
                                     </a>
                                     <div className="category-search-wrapper">
-                                        <div className="category-btn category-hover-header">
+                                        {/* <div className="category-btn category-hover-header">
                                             <img className="parent" src="/assets/images/icons/bar-1.svg" alt="icons" />
                                             <span>Categories</span>
                                             <CategoryMenu />
-                                        </div>
+                                        </div> */}
                                         <form onSubmit={handleSubmit} className="search-header" autoComplete="off">
                                             <input
                                                 ref={inputRef}
