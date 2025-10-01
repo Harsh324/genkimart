@@ -3,7 +3,7 @@
 import HeaderOne from "@/components/header/HeaderOne";
 import FooterOne from "@/components/footer/FooterOne";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { resendVerificationEmail, verifyEmail } from "@/lib/authApi";
 import { toast } from "react-toastify";
 
@@ -11,26 +11,26 @@ export default function VerifyEmailPage() {
     const sp = useSearchParams();
     const router = useRouter();
     const email = sp.get("email") || "";
-    const key = sp.get("key");
+    const key = sp.get("key") ?? "";
 
     const [sending, setSending] = useState(false);
-    const [verifying, setVerifying] = useState<boolean>(!!key);
+    const [verifying, setVerifying] = useState(false);
 
+    const run = async () => {
+        if (!key || verifying) return;
+        setVerifying(true);
+        try {
+            await verifyEmail(key);
+            toast.success("Email verified! You can now sign in.", { containerId: 'app-toaster' });
+            router.replace("/login");
+        } catch (e: any) {
+            const msg = e?.response?.data || "Verification failed";
+            toast.error(typeof msg === "string" ? msg : "Verification failed", { containerId: 'app-toaster' });
+            setVerifying(false);
+        }
+    };
     useEffect(() => {
-        const run = async () => {
-            if (!key) return;
-            try {
-                await verifyEmail(key);
-                toast.success("Email verified! You can now sign in.");
-                router.replace("/login");
-            } catch (e: any) {
-                const msg = e?.response?.data || "Verification failed";
-                toast.error(typeof msg === "string" ? msg : "Verification failed");
-                setVerifying(false);
-            }
-        };
         run();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [key]);
 
     const onResend = async () => {

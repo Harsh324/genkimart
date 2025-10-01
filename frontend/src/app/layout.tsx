@@ -44,7 +44,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={`${geistSans.variable} ${geistMono.variable}`}>
 				{/* <CompareProvider> */}
-				<WishlistProvider>
+				{/* <WishlistProvider>
 					<CartProvider>
 						<AuthProvider>
 							{children}
@@ -52,6 +52,14 @@ export default function RootLayout({
 						
 						<ClientToaster />
 					</CartProvider>
+				</WishlistProvider> */}
+				<WishlistProvider>
+					<AuthProvider>
+						<CartProvider>
+						{children}
+						<ClientToaster />
+						</CartProvider>
+					</AuthProvider>
 				</WishlistProvider>
 				{/* </CompareProvider> */}
 			</body>

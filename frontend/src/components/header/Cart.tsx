@@ -12,7 +12,7 @@ const money = (n: number, locale = 'ja-JP', currency = 'JPY') =>
 const toPrice = (p: unknown) => (typeof p === 'number' ? p : Number(p ?? 0) || 0);
 
 const CartDropdown: React.FC = () => {
-	const { items, remove, isLoaded } = useCart();
+	const { items, remove, isLoaded, checkout } = useCart();
 
 	// Sum quantities for the badge (feel free to switch to items.length if you prefer)
 	const itemCount = useMemo(
@@ -125,9 +125,16 @@ const CartDropdown: React.FC = () => {
 						<Link href="/cart" className="rts-btn btn-primary">
 							View Cart
 						</Link>
-						<Link href="/checkout" className="rts-btn btn-primary border-only">
+						{/* <Link href="/checkout" className="rts-btn btn-primary border-only">
 							CheckOut
-						</Link>
+						</Link> */}
+						<button
+							onClick={checkout}
+							disabled={!items.length}
+							className="rts-btn btn-primary border-only"
+						>
+							Checkout
+						</button>
 					</div>
 				</div>
 			</div>

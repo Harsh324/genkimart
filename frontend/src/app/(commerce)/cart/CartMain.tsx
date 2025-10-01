@@ -12,7 +12,7 @@ const money = (n: number, locale = 'ja-JP', currency = 'JPY') =>
 const toPrice = (p: unknown) => (typeof p === 'number' ? p : Number(p ?? 0) || 0);
 
 const CartMain: React.FC = () => {
-    const { items, remove, updateQuantity, clear, isLoaded } = useCart();
+    const { items, remove, updateQuantity, clear, isLoaded, checkout } = useCart();
 
     const subtotal = useMemo(
         () => (isLoaded ? items.reduce((sum, it) => sum + toPrice(it.product.price) * it.quantity, 0) : 0),
@@ -185,7 +185,14 @@ const CartMain: React.FC = () => {
                                     </h6>
                                 </div>
                                 <div className="button-area">
-                                    <button className="rts-btn btn-primary">Proceed To Checkout</button>
+                                    {/* <button className="rts-btn btn-primary">Proceed To Checkout</button> */}
+                                    <button
+                                        onClick={checkout}
+                                        disabled={!items.length}
+                                        className="rts-btn btn-primary"
+                                    >
+                                        Checkout
+                                    </button>
                                 </div>
                             </div>
                         </div>
