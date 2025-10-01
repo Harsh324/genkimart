@@ -13,22 +13,32 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const router = useRouter();
     const sp = useSearchParams();
-    const next = sp.get("next") || "/profile";
+
+    const getRedirectPath = () => {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("postLoginRedirect");
+            if (stored) {
+                localStorage.removeItem("postLoginRedirect");
+                return stored;
+            }
+        }
+        return sp.get("next") || "/profile";
+    };
 
     useEffect(() => {
         if (!loading && user) {
-            router.replace(next);
+            router.replace(getRedirectPath());
         }
-    }, [loading, user, next, router]);
+    }, [loading, user, router]);
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (user) {               // <-- extra safety
-            router.replace(next);
+            router.replace(getRedirectPath());
             return;
         }
         await login({ email, password });
-        router.replace(next);
+        router.replace(getRedirectPath());
     };
 
     return (
